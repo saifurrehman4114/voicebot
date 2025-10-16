@@ -103,12 +103,8 @@ VOICE_FILES_DIR = os.path.join(MEDIA_ROOT, 'voice_recordings')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# CORS Settings
-if DEBUG:
-    CORS_ALLOW_ALL_ORIGINS = True
-else:
-    CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', '').split(',')
-
+# CORS Settings - Updated for Railway
+CORS_ALLOW_ALL_ORIGINS = True  # Allow all origins for now
 CORS_ALLOW_CREDENTIALS = True
 
 REST_FRAMEWORK = {
