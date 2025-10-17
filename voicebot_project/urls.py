@@ -7,7 +7,10 @@ from django.views.generic import TemplateView
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/voice/', include('voice_api.urls')),
-    path('', TemplateView.as_view(template_name='index.html'), name='home'),
+
+    # Template routes
+    path('', TemplateView.as_view(template_name='otp_verify.html'), name='home'),
+    path('chat/', TemplateView.as_view(template_name='chat_copilot.html'), name='chat'),
 ]
 
 if settings.DEBUG:

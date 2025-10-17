@@ -130,6 +130,12 @@ SPEECH_RECOGNITION_ENGINE = os.environ.get('SPEECH_RECOGNITION_ENGINE', 'google_
 GOOGLE_CLOUD_SPEECH_CREDENTIALS = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', '')
 OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', '')
 
+# Brevo (Sendinblue) Email Configuration for OTP
+BREVO_API_KEY = os.environ.get('BREVO_API_KEY', '')
+BREVO_SENDER_EMAIL = os.environ.get('BREVO_SENDER_EMAIL', '7d9ffd006@smtp-brevo.com')
+BREVO_SENDER_NAME = os.environ.get('BREVO_SENDER_NAME', 'Voicebot Chat')
+BREVO_SMTP_PASSWORD = os.environ.get('BREVO_SMTP_PASSWORD', '6x8bTRmzjSWJkgwh')
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,

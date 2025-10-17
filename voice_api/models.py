@@ -92,3 +92,93 @@ class VoiceRequest(models.Model):
     
     def __str__(self):
         return f"VoiceRequest {self.id} - {self.status}"
+
+
+class PhoneVerification(models.Model):
+    """Model to store OTP verification for email-based authentication"""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    phone_number = models.CharField(max_length=255, help_text="Email address for verification", db_column='phone_number')  # Keep column name for backward compatibility
+    otp_code = models.CharField(max_length=6, help_text="6-digit OTP code")
+    is_verified = models.BooleanField(default=False)
+    verification_attempts = models.IntegerField(default=0)
+
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    verified_at = models.DateTimeField(blank=True, null=True)
+    expires_at = models.DateTimeField(help_text="OTP expiration time")
+
+    class Meta:
+        db_table = 'phone_verifications'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['phone_number', 'is_verified']),
+            models.Index(fields=['otp_code']),
+        ]
+
+    def __str__(self):
+        return f"Verification for {self.phone_number} - {'Verified' if self.is_verified else 'Pending'}"
+
+
+class ChatConversation(models.Model):
+    """Model to track conversation threads for each user"""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    phone_number = models.CharField(max_length=255, help_text="User's email address", db_column='phone_number')  # Removed unique constraint for multiple conversations
+
+    # Conversation metadata
+    title = models.CharField(max_length=255, default="New Chat", help_text="Auto-generated conversation title")
+    total_messages = models.IntegerField(default=0)
+    last_activity = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'chat_conversations'
+        ordering = ['-last_activity']
+        indexes = [
+            models.Index(fields=['phone_number']),
+            models.Index(fields=['phone_number', '-last_activity']),
+        ]
+
+    def __str__(self):
+        return f"{self.title} - {self.phone_number}"
+
+
+class ChatMessage(models.Model):
+    """Model to store individual chat messages with audio and responses"""
+
+    MESSAGE_TYPE_CHOICES = [
+        ('user', 'User'),
+        ('bot', 'Bot'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    conversation = models.ForeignKey(
+        ChatConversation,
+        on_delete=models.CASCADE,
+        related_name='messages'
+    )
+
+    # Message details
+    message_type = models.CharField(max_length=10, choices=MESSAGE_TYPE_CHOICES)
+
+    # For user messages (audio)
+    audio_file = models.CharField(max_length=500, blank=True, null=True, help_text="Path to audio file")
+    transcribed_text = models.TextField(blank=True, null=True)
+
+    # For bot messages (text response)
+    response_text = models.TextField(blank=True, null=True)
+
+    # Metadata
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'chat_messages'
+        ordering = ['created_at']
+        indexes = [
+            models.Index(fields=['conversation', 'created_at']),
+            models.Index(fields=['message_type']),
+        ]
+
+    def __str__(self):
+        return f"{self.message_type} message in {self.conversation.phone_number} at {self.created_at}"
