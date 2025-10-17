@@ -105,10 +105,10 @@ class OTPService:
             # Plain text fallback
             text_content = f"Your Voicebot verification code is: {otp_code}\n\nThis code will expire in 10 minutes."
 
-            # Sender information
+            # Sender information - use verified email from settings
             sender = {
-                "name": "Voicebot Chat",
-                "email": "7d9ffd006@smtp-brevo.com"
+                "name": getattr(settings, 'BREVO_SENDER_NAME', 'Voicebot Chat'),
+                "email": getattr(settings, 'BREVO_SENDER_EMAIL', 'saifrh.work@gmail.com')
             }
 
             # Recipient
