@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Voicebot AI - Your AI Companion</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
     <style>
         * {
             margin: 0;
@@ -77,10 +78,44 @@
             border-right: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             z-index: 100;
             box-shadow: var(--shadow-md);
+        }
+
+        .sidebar.collapsed {
+            width: 80px;
+        }
+
+        .sidebar.collapsed .logo-text,
+        .sidebar.collapsed .new-chat-text,
+        .sidebar.collapsed .section-title,
+        .sidebar.collapsed .conversation-content,
+        .sidebar.collapsed .user-info,
+        .sidebar.collapsed .logout-btn span {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+        }
+
+        .sidebar.collapsed .new-chat-btn {
+            padding: 12px;
+            justify-content: center;
+        }
+
+        .sidebar.collapsed .user-profile {
+            padding: 12px;
+            justify-content: center;
+        }
+
+        .sidebar.collapsed .conversation-item {
+            justify-content: center;
+            padding: 12px;
+        }
+
+        .sidebar.collapsed .delete-conversation {
+            display: none;
         }
 
         .sidebar-header {
@@ -118,6 +153,11 @@
             z-index: 1;
         }
 
+        .logo-text {
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
         .logo-icon {
             width: 36px;
             height: 36px;
@@ -128,6 +168,31 @@
             justify-content: center;
             font-size: 20px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            flex-shrink: 0;
+        }
+
+        .sidebar-toggle-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: all 0.2s;
+            z-index: 2;
+        }
+
+        .sidebar-toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
         }
 
         .new-chat-btn {
@@ -150,6 +215,10 @@
             z-index: 1;
         }
 
+        .new-chat-text {
+            transition: all 0.3s;
+        }
+
         .new-chat-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
@@ -169,6 +238,7 @@
             letter-spacing: 1px;
             margin-bottom: 12px;
             padding: 0 8px;
+            transition: all 0.3s;
         }
 
         .conversation-item {
@@ -222,6 +292,7 @@
             overflow: hidden;
             position: relative;
             z-index: 1;
+            transition: all 0.3s;
         }
 
         .conversation-title {
@@ -236,6 +307,11 @@
             font-size: 11px;
             opacity: 0.7;
             margin-top: 2px;
+        }
+
+        .conversation-icon {
+            font-size: 20px;
+            flex-shrink: 0;
         }
 
         .delete-conversation {
@@ -300,11 +376,13 @@
             font-size: 16px;
             font-weight: 600;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            flex-shrink: 0;
         }
 
         .user-info {
             flex: 1;
             overflow: hidden;
+            transition: all 0.3s;
         }
 
         .user-email {
@@ -332,6 +410,10 @@
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
         .logout-btn:hover {
@@ -347,6 +429,11 @@
             flex-direction: column;
             background: var(--bg-primary);
             position: relative;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .main-content.right-sidebar-open {
+            margin-right: 400px;
         }
 
         .chat-header {
@@ -398,6 +485,157 @@
             margin-top: 2px;
         }
 
+        /* Summary Section */
+        .summary-section {
+            padding: 20px 32px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            display: none;
+        }
+
+        .summary-section.show {
+            display: block;
+        }
+
+        .summary-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .summary-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .summary-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .summary-controls {
+            position: relative;
+        }
+
+        .summary-btn {
+            padding: 8px 16px;
+            background: var(--gradient-copilot);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .summary-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .summary-btn:disabled {
+            background: #e5e5e5;
+            color: #999;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .summary-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 8px;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            min-width: 180px;
+            display: none;
+            z-index: 100;
+        }
+
+        .summary-dropdown.show {
+            display: block;
+            animation: slideDown 0.2s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .summary-dropdown-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+
+        .summary-dropdown-item:hover {
+            background: var(--bg-glass);
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(240, 147, 251, 0.05) 100%);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            display: none;
+        }
+
+        .summary-card.show {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .summary-type {
+            font-size: 12px;
+            color: var(--copilot-purple);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .summary-text {
+            font-size: 14px;
+            line-height: 1.8;
+            color: var(--text-primary);
+        }
+
         /* Messages Container */
         .messages-container {
             flex: 1;
@@ -419,6 +657,7 @@
             animation: messageSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             opacity: 0;
             animation-fill-mode: forwards;
+            position: relative;
         }
 
         @keyframes messageSlideIn {
@@ -481,6 +720,7 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
+            position: relative;
         }
 
         .message-bubble {
@@ -525,6 +765,66 @@
             font-weight: 500;
             margin-bottom: 8px;
             backdrop-filter: blur(5px);
+        }
+
+        .audio-player {
+            margin-top: 8px;
+            width: 100%;
+        }
+
+        .audio-player audio {
+            width: 100%;
+            height: 32px;
+            border-radius: 16px;
+        }
+
+        .transcription-text {
+            margin-top: 8px;
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            font-size: 13px;
+            font-style: italic;
+            backdrop-filter: blur(5px);
+        }
+
+        .message-actions {
+            position: absolute;
+            top: 0;
+            right: -40px;
+            opacity: 0;
+            transition: all 0.2s;
+        }
+
+        .message-wrapper.user .message-actions {
+            left: -40px;
+            right: auto;
+        }
+
+        .message-wrapper:hover .message-actions {
+            opacity: 1;
+        }
+
+        .context-btn {
+            width: 32px;
+            height: 32px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all 0.2s;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .context-btn:hover {
+            background: var(--gradient-copilot);
+            color: white;
+            transform: scale(1.1);
+            box-shadow: var(--shadow-md);
         }
 
         .message-time {
@@ -592,6 +892,557 @@
                 transform: translateY(-10px);
                 opacity: 1;
             }
+        }
+
+        /* Right Sidebar for Context Questions */
+        .right-sidebar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 420px;
+            min-width: 320px;
+            max-width: 50vw;
+            height: 100vh;
+            background: var(--bg-secondary);
+            border-left: 1px solid var(--border-color);
+            box-shadow: var(--shadow-xl);
+            transform: translateX(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .right-sidebar.open {
+            transform: translateX(0);
+        }
+
+        .sidebar-resize-handle {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 8px;
+            cursor: col-resize;
+            background: transparent;
+            z-index: 10;
+            transition: background 0.2s;
+        }
+
+        .sidebar-resize-handle:hover {
+            background: linear-gradient(90deg, rgba(102, 126, 234, 0.3) 0%, transparent 100%);
+        }
+
+        .sidebar-resize-handle::after {
+            content: '';
+            position: absolute;
+            left: 3px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 2px;
+            height: 40px;
+            background: var(--border-color);
+            border-radius: 2px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .sidebar-resize-handle:hover::after {
+            opacity: 1;
+        }
+
+        .right-sidebar.resizing {
+            transition: none;
+        }
+
+        .right-sidebar.resizing .sidebar-resize-handle {
+            background: linear-gradient(90deg, rgba(102, 126, 234, 0.5) 0%, transparent 100%);
+        }
+
+        .right-sidebar-header {
+            padding: 20px;
+            background: var(--gradient-copilot);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .right-sidebar-title {
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .close-sidebar-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.2s;
+        }
+
+        .close-sidebar-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .context-message-display {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(240, 147, 251, 0.05) 100%);
+            flex-shrink: 0;
+        }
+
+        .context-message-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .context-message-text {
+            font-size: 13px;
+            line-height: 1.5;
+            color: var(--text-primary);
+            padding: 10px 12px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            max-height: 100px;
+            overflow-y: auto;
+        }
+
+        /* Entity Extraction Styles */
+        .entity-info {
+            padding: 20px;
+            background: var(--bg-secondary);
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .entity-section {
+            flex-shrink: 0;
+        }
+
+        .entity-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .entity-value {
+            font-size: 14px;
+            color: var(--text-primary);
+            padding: 14px 16px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(240, 147, 251, 0.1) 100%);
+            border-radius: 8px;
+            border-left: 3px solid var(--copilot-purple);
+            line-height: 1.7;
+        }
+
+        .entity-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .entity-tag {
+            font-size: 13px;
+            padding: 8px 14px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(240, 147, 251, 0.15) 100%);
+            color: var(--copilot-purple);
+            border-radius: 16px;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            font-weight: 600;
+            line-height: 1.4;
+        }
+
+        .entity-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .entity-list-item {
+            font-size: 13px;
+            padding: 12px 16px;
+            background: var(--bg-glass);
+            border-radius: 8px;
+            border-left: 3px solid var(--copilot-teal);
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .context-questions-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px 20px;
+            min-height: 0;
+        }
+
+        .context-question-item {
+            margin-bottom: 16px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .context-question {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            padding: 12px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(240, 147, 251, 0.1) 100%);
+            border-radius: 12px;
+            border-left: 3px solid var(--copilot-purple);
+        }
+
+        .context-answer {
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+            padding: 12px;
+            background: var(--bg-glass);
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        .no-questions-message {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .no-questions-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.3;
+        }
+
+        .context-input-area {
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            flex-shrink: 0;
+            position: sticky;
+            bottom: 0;
+            z-index: 10;
+        }
+
+        .context-input-container {
+            display: flex;
+            gap: 12px;
+            padding: 12px;
+            background: var(--bg-glass);
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            transition: all 0.3s;
+        }
+
+        .context-input-container:focus-within {
+            border-color: var(--copilot-purple);
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            background: white;
+        }
+
+        .context-input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            font-size: 14px;
+            color: var(--text-primary);
+            outline: none;
+            resize: none;
+            max-height: 100px;
+            min-height: 36px;
+            font-family: inherit;
+        }
+
+        .context-send-btn {
+            width: 36px;
+            height: 36px;
+            background: var(--gradient-copilot);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .context-send-btn:hover:not(:disabled) {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-md);
+        }
+
+        .context-send-btn:disabled {
+            background: #e5e5e5;
+            cursor: not-allowed;
+        }
+
+        /* Context Upload Section Styles */
+        .context-upload-section {
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(240, 147, 251, 0.05) 100%);
+        }
+
+        .context-upload-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--copilot-purple);
+        }
+
+        .context-upload-header span:first-child {
+            font-size: 16px;
+        }
+
+        .context-upload-actions {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .context-action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 10px 6px;
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .context-action-btn span:first-child {
+            font-size: 20px;
+        }
+
+        .context-action-btn .btn-label {
+            font-size: 10px;
+            font-weight: 500;
+        }
+
+        .context-action-btn:hover {
+            background: var(--gradient-copilot);
+            color: white;
+            border-color: transparent;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .context-action-btn.recording {
+            background: #EF4444;
+            color: white;
+            border-color: transparent;
+            animation: pulse 1.5s infinite;
+        }
+
+        .context-file-display {
+            min-height: 35px;
+            padding: 10px;
+            background: white;
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .context-file-display:empty::before {
+            content: 'No files selected';
+            opacity: 0.5;
+            font-size: 11px;
+        }
+
+        .context-upload-send-btn {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 16px;
+            background: var(--gradient-copilot);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .context-upload-send-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .context-upload-send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .context-upload-send-btn span:first-child {
+            font-size: 16px;
+        }
+
+        /* Sidebar Upload Section Styles */
+        .sidebar-upload-section {
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(240, 147, 251, 0.05) 100%);
+        }
+
+        .sidebar-section-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--copilot-purple);
+        }
+
+        .sidebar-section-header span:first-child {
+            font-size: 18px;
+        }
+
+        .sidebar-input-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .sidebar-input-actions {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .sidebar-action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 12px 8px;
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .sidebar-action-btn span:first-child {
+            font-size: 24px;
+        }
+
+        .sidebar-action-btn .btn-label {
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .sidebar-action-btn:hover {
+            background: var(--gradient-copilot);
+            color: white;
+            border-color: transparent;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .sidebar-file-display {
+            min-height: 40px;
+            padding: 12px;
+            background: white;
+            border: 2px dashed var(--border-color);
+            border-radius: 10px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .sidebar-file-display:empty::before {
+            content: 'No files selected';
+            opacity: 0.5;
+        }
+
+        .sidebar-send-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 20px;
+            background: var(--gradient-copilot);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .sidebar-send-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .sidebar-send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .sidebar-send-btn span:first-child {
+            font-size: 18px;
         }
 
         /* Input Area */
@@ -953,6 +1804,218 @@
             }
         }
 
+        /* Appointment Reminder Popup */
+        .appointment-reminder-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            z-index: 2000;
+            width: min(480px, 90vw);
+            overflow: hidden;
+            animation: popupEnter 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: none;
+        }
+
+        .appointment-reminder-popup.show {
+            display: block;
+        }
+
+        .appointment-reminder-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            z-index: 1999;
+            animation: fadeIn 0.3s;
+            display: none;
+        }
+
+        .appointment-reminder-overlay.show {
+            display: block;
+        }
+
+        @keyframes popupEnter {
+            from {
+                transform: translate(-50%, -50%) scale(0.9);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .reminder-popup-header {
+            padding: 24px;
+            background: var(--gradient-copilot);
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .reminder-popup-icon {
+            font-size: 48px;
+            animation: bounce 1s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .reminder-popup-header-text h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .reminder-popup-header-text p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .reminder-popup-body {
+            padding: 24px;
+        }
+
+        .reminder-appointment-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .reminder-color-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .reminder-detail-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px;
+            background: var(--bg-primary);
+            border-radius: 12px;
+            margin-bottom: 12px;
+        }
+
+        .reminder-detail-icon {
+            font-size: 20px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border-radius: 8px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .reminder-detail-content {
+            flex: 1;
+        }
+
+        .reminder-detail-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .reminder-detail-value {
+            font-size: 15px;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .reminder-countdown {
+            text-align: center;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            border-radius: 16px;
+            margin-bottom: 16px;
+        }
+
+        .reminder-countdown-time {
+            font-size: 36px;
+            font-weight: 800;
+            background: var(--gradient-copilot);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 4px;
+        }
+
+        .reminder-countdown-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .reminder-popup-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .reminder-btn {
+            flex: 1;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .reminder-btn-primary {
+            background: var(--gradient-copilot);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .reminder-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .reminder-btn-secondary {
+            background: white;
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+        }
+
+        .reminder-btn-secondary:hover {
+            background: var(--bg-primary);
+            border-color: var(--copilot-purple);
+        }
+
         /* Scrollbar Styling */
         ::-webkit-scrollbar {
             width: 8px;
@@ -987,6 +2050,140 @@
         }
 
         /* Responsive Design */
+        /* Zoom level and responsiveness improvements */
+        @media (min-width: 1600px) {
+            .right-sidebar {
+                width: min(450px, 30vw);
+            }
+        }
+
+        /* Better scaling for zoomed views (100%-200%) */
+        @media (min-resolution: 1.5dppx) {
+            .entity-label {
+                font-size: 13px;
+            }
+
+            .entity-tag {
+                font-size: 14px;
+                padding: 7px 13px;
+            }
+
+            .entity-list-item {
+                font-size: 14px;
+                padding: 11px 15px;
+            }
+
+            .entity-value {
+                font-size: 15px;
+                padding: 13px 15px;
+            }
+        }
+
+        /* Specific handling for 100% zoom to ensure visibility */
+        @media (max-height: 900px) {
+            .context-message-display {
+                padding: 12px 16px;
+            }
+
+            .context-message-text {
+                max-height: 80px;
+                font-size: 12px;
+            }
+
+            .entity-info {
+                padding: 16px;
+                gap: 16px;
+            }
+
+            .entity-section {
+                margin-bottom: 0;
+            }
+
+            .entity-label {
+                font-size: 12px;
+                margin-bottom: 8px;
+            }
+
+            .entity-value {
+                padding: 12px 14px;
+                font-size: 13px;
+            }
+
+            .entity-tag {
+                font-size: 12px;
+                padding: 6px 12px;
+            }
+
+            .entity-list-item {
+                font-size: 12px;
+                padding: 10px 14px;
+            }
+
+            .context-input-area {
+                padding: 16px;
+            }
+
+            .context-input-container {
+                padding: 10px;
+            }
+
+            .context-input {
+                font-size: 13px;
+                min-height: 32px;
+            }
+        }
+
+        /* Extra compact for very small viewports or high zoom */
+        @media (max-height: 700px) {
+            .right-sidebar-header {
+                padding: 16px;
+            }
+
+            .context-message-display {
+                padding: 10px 16px;
+            }
+
+            .context-message-text {
+                max-height: 60px;
+                font-size: 11px;
+                padding: 8px 10px;
+            }
+
+            .entity-info {
+                padding: 12px;
+                gap: 12px;
+            }
+
+            .entity-label {
+                font-size: 11px;
+                margin-bottom: 6px;
+            }
+
+            .entity-value {
+                padding: 10px 12px;
+                font-size: 12px;
+            }
+
+            .entity-tag {
+                font-size: 11px;
+                padding: 5px 10px;
+            }
+
+            .entity-list-item {
+                font-size: 11px;
+                padding: 8px 12px;
+            }
+
+            .context-input-area {
+                padding: 12px;
+            }
+
+            .context-input {
+                font-size: 12px;
+                min-height: 28px;
+            }
+        }
+
         @media (max-width: 768px) {
             .sidebar {
                 position: fixed;
@@ -995,6 +2192,10 @@
                 bottom: 0;
                 transform: translateX(-100%);
                 box-shadow: none;
+            }
+
+            .sidebar.collapsed {
+                width: 300px;
             }
 
             .sidebar.open {
@@ -1029,6 +2230,33 @@
             .welcome-features {
                 grid-template-columns: 1fr;
             }
+
+            .right-sidebar {
+                width: 100%;
+                min-width: 100%;
+            }
+
+            .main-content.right-sidebar-open {
+                margin-right: 0;
+            }
+
+            .message-actions {
+                position: static;
+                opacity: 1;
+                margin-top: 8px;
+            }
+
+            .entity-label {
+                font-size: 13px;
+            }
+
+            .entity-tag {
+                font-size: 14px;
+            }
+
+            .entity-list-item {
+                font-size: 14px;
+            }
         }
     </style>
 </head>
@@ -1039,13 +2267,16 @@
         <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
+                <button class="sidebar-toggle-btn" onclick="toggleSidebarCollapse()" title="Toggle sidebar">
+                    <span id="sidebarToggleIcon">◀</span>
+                </button>
                 <div class="logo">
                     <div class="logo-icon">🤖</div>
-                    <span>Voicebot AI</span>
+                    <span class="logo-text">Voicebot AI</span>
                 </div>
                 <button class="new-chat-btn" onclick="createNewChat()">
                     <span>✨</span>
-                    <span>New Chat</span>
+                    <span class="new-chat-text">New Chat</span>
                 </button>
             </div>
 
@@ -1064,18 +2295,59 @@
                         <div class="user-status">🟢 Online</div>
                     </div>
                 </div>
-                <button class="logout-btn" onclick="logout()">Sign Out</button>
+                <button class="logout-btn" onclick="logout()">
+                    <span>🚪</span>
+                    <span>Sign Out</span>
+                </button>
             </div>
         </aside>
 
         <!-- Main Content -->
-        <main class="main-content">
+        <main class="main-content" id="mainContent">
             <div class="chat-header">
                 <div class="chat-header-left">
                     <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
                     <div>
                         <h1 class="chat-title" id="chatTitle">AI Companion</h1>
                         <div class="chat-subtitle">Your intelligent voice assistant</div>
+                    </div>
+                </div>
+                <div class="chat-header-right">
+                    <button class="header-action-btn" onclick="window.location.href='/calendar/'" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 10px 20px; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: all 0.3s;">
+                        📅 Calendar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Summary Section -->
+            <div class="summary-section" id="summarySection">
+                <div class="summary-container">
+                    <div class="summary-header">
+                        <div class="summary-title">
+                            <span>📝</span>
+                            <span>Conversation Summary</span>
+                        </div>
+                        <div class="summary-controls">
+                            <button class="summary-btn" id="summaryBtn" onclick="toggleSummaryDropdown()">
+                                <span>✨</span>
+                                <span>Generate Summary</span>
+                                <span>▼</span>
+                            </button>
+                            <div class="summary-dropdown" id="summaryDropdown">
+                                <div class="summary-dropdown-item" onclick="generateSummary('first_message')">
+                                    <span>📄</span>
+                                    <span>First Message Only</span>
+                                </div>
+                                <div class="summary-dropdown-item" onclick="generateSummary('all_messages')">
+                                    <span>📚</span>
+                                    <span>All Messages</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="summary-card" id="summaryCard">
+                        <div class="summary-type" id="summaryType">Summary</div>
+                        <div class="summary-text" id="summaryText"></div>
                     </div>
                 </div>
             </div>
@@ -1112,21 +2384,28 @@
                 </div>
             </div>
 
+            <!-- Input Area for New Messages (Whole Conversation) -->
             <div class="input-area">
                 <div class="input-wrapper">
-                    <div class="recording-banner" id="recordingBanner">
+                    <div class="recording-banner" id="recordingBanner" style="display: none;">
                         <span class="recording-dot"></span>
                         <span>Recording in progress...</span>
                     </div>
 
                     <div class="input-container">
                         <div class="input-actions">
-                            <button class="action-btn" onclick="document.getElementById('fileInput').click()" title="Upload audio file">
+                            <button class="action-btn" onclick="document.getElementById('audioInput').click()" title="Upload audio file">
+                                🎤
+                            </button>
+                            <input type="file" id="audioInput" class="file-input" accept="audio/*" onchange="handleAudioSelect()">
+
+                            <button class="action-btn" onclick="document.getElementById('attachmentInput').click()" title="Attach file (PDF, Image, Doc)">
                                 📎
                             </button>
-                            <input type="file" id="fileInput" class="file-input" accept="audio/*" onchange="handleFileSelect()">
+                            <input type="file" id="attachmentInput" class="file-input" accept=".pdf,.doc,.docx,.txt,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.bmp,.svg,.webp,.zip,.rar,.7z,.tar,.gz" onchange="handleAttachmentSelect()">
+
                             <button class="action-btn" id="recordBtn" onclick="toggleRecording()" title="Record audio">
-                                🎤
+                                🔴
                             </button>
                         </div>
                         <div class="file-name" id="fileName"></div>
@@ -1137,6 +2416,123 @@
                 </div>
             </div>
         </main>
+
+        <!-- Right Sidebar for Message Context (Specific Message) -->
+        <aside class="right-sidebar" id="rightSidebar">
+            <div class="sidebar-resize-handle" id="sidebarResizeHandle"></div>
+            <div class="right-sidebar-header">
+                <div class="right-sidebar-title">
+                    <span>💡</span>
+                    <span>Message Context</span>
+                </div>
+                <button class="close-sidebar-btn" onclick="closeContextSidebar()">✕</button>
+            </div>
+
+            <div class="context-message-display">
+                <div class="context-message-label">Selected Message</div>
+                <div class="context-message-text" id="contextMessageText">
+                    No message selected
+                </div>
+            </div>
+
+            <!-- Entity Extraction Info -->
+            <div class="entity-info" id="entityInfo" style="display: none;">
+                <div class="entity-section" id="intentSection" style="display: none;">
+                    <div class="entity-label">🎯 Intent</div>
+                    <div class="entity-value" id="intentValue"></div>
+                </div>
+
+                <div class="entity-section" id="keywordsSection" style="display: none;">
+                    <div class="entity-label">🔑 Keywords</div>
+                    <div class="entity-tags" id="keywordsTags"></div>
+                </div>
+
+                <div class="entity-section" id="entitiesSection" style="display: none;">
+                    <div class="entity-label">👥 Entities</div>
+                    <div class="entity-tags" id="entitiesTags"></div>
+                </div>
+
+                <div class="entity-section" id="domainTermsSection" style="display: none;">
+                    <div class="entity-label">🔬 Domain Terms</div>
+                    <div class="entity-tags" id="domainTermsTags"></div>
+                </div>
+
+                <div class="entity-section" id="actionItemsSection" style="display: none;">
+                    <div class="entity-label">✅ Action Items</div>
+                    <div class="entity-list" id="actionItemsList"></div>
+                </div>
+
+                <div class="entity-section" id="topicsSection" style="display: none;">
+                    <div class="entity-label">📚 Topics</div>
+                    <div class="entity-tags" id="topicsTags"></div>
+                </div>
+            </div>
+
+            <!-- File Upload Section in Context Sidebar -->
+            <div class="context-upload-section">
+                <div class="context-upload-header">
+                    <span>📤</span>
+                    <span>Respond with File/Audio</span>
+                </div>
+
+                <!-- Recording Banner for Sidebar -->
+                <div class="recording-banner" id="contextRecordingBanner" style="display: none;">
+                    <span class="recording-dot"></span>
+                    <span>Recording...</span>
+                </div>
+
+                <!-- Upload Controls -->
+                <div class="context-upload-actions">
+                    <button class="context-action-btn" onclick="document.getElementById('contextAudioInput').click()" title="Upload audio">
+                        <span>🎤</span>
+                        <span class="btn-label">Audio</span>
+                    </button>
+                    <input type="file" id="contextAudioInput" class="file-input" accept="audio/*" onchange="handleContextAudioSelect()">
+
+                    <button class="context-action-btn" onclick="document.getElementById('contextAttachmentInput').click()" title="Attach file">
+                        <span>📎</span>
+                        <span class="btn-label">File</span>
+                    </button>
+                    <input type="file" id="contextAttachmentInput" class="file-input" accept=".pdf,.doc,.docx,.txt,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.bmp,.svg,.webp,.zip,.rar,.7z,.tar,.gz" onchange="handleContextAttachmentSelect()">
+
+                    <button class="context-action-btn" id="contextRecordBtn" onclick="toggleContextRecording()" title="Record audio">
+                        <span>🔴</span>
+                        <span class="btn-label">Record</span>
+                    </button>
+                </div>
+
+                <!-- File Display for Context Uploads -->
+                <div class="context-file-display" id="contextFileDisplay"></div>
+
+                <!-- Send Button for Context Uploads -->
+                <button class="context-upload-send-btn" id="contextUploadSendBtn" onclick="sendContextMessage()" disabled style="display: none;">
+                    <span>➤</span>
+                    <span>Send to Conversation</span>
+                </button>
+            </div>
+
+            <div class="context-questions-container" id="contextQuestionsContainer">
+                <div class="no-questions-message">
+                    <div class="no-questions-icon">💭</div>
+                    <div>No questions asked yet.<br>Ask something about this message!</div>
+                </div>
+            </div>
+
+            <div class="context-input-area">
+                <div class="context-input-container">
+                    <textarea
+                        class="context-input"
+                        id="contextInput"
+                        placeholder="Ask a question about this message..."
+                        rows="1"
+                        onkeydown="handleContextInputKeydown(event)"
+                    ></textarea>
+                    <button class="context-send-btn" id="contextSendBtn" onclick="sendContextQuestion()" disabled>
+                        ➤
+                    </button>
+                </div>
+            </div>
+        </aside>
     </div>
 
     <!-- Notification -->
@@ -1148,14 +2544,75 @@
         </div>
     </div>
 
+    <!-- Appointment Reminder Popup -->
+    <div class="appointment-reminder-overlay" id="reminderOverlay" onclick="closeReminderPopup()"></div>
+    <div class="appointment-reminder-popup" id="reminderPopup">
+        <div class="reminder-popup-header">
+            <div class="reminder-popup-icon" id="reminderPopupIcon">⏰</div>
+            <div class="reminder-popup-header-text">
+                <h3 id="reminderPopupTitle">Appointment Reminder</h3>
+                <p id="reminderPopupSubtitle">Your appointment is coming up</p>
+            </div>
+        </div>
+        <div class="reminder-popup-body">
+            <div class="reminder-countdown" id="reminderCountdown">
+                <div class="reminder-countdown-time" id="reminderCountdownTime">5:00</div>
+                <div class="reminder-countdown-label">minutes until start</div>
+            </div>
+
+            <div class="reminder-appointment-title" id="reminderAppointmentTitle">
+                <span class="reminder-color-indicator" id="reminderColorIndicator"></span>
+                <span>Team Meeting</span>
+            </div>
+
+            <div id="reminderDetailsContainer">
+                <!-- Details will be inserted here -->
+            </div>
+
+            <div class="reminder-popup-actions">
+                <button class="reminder-btn reminder-btn-secondary" onclick="dismissReminder()">
+                    <span>🔕</span>
+                    <span>Dismiss</span>
+                </button>
+                <button class="reminder-btn reminder-btn-primary" onclick="startAppointmentConversation()">
+                    <span>🎙️</span>
+                    <span id="reminderActionText">Start Recording</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // Helper function to get CSRF token from cookies
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
         let mediaRecorder;
         let audioChunks = [];
         let isRecording = false;
-        let selectedFile = null;
+        let selectedAudioFile = null;
+        let selectedAttachmentFile = null;
         let userEmail = '';
         let currentConversationId = null;
         let conversations = [];
+        let currentMessages = [];
+        let selectedMessageId = null;
+        let selectedMessageText = '';
+        let currentAppointmentNotification = null;
+        let notificationCheckInterval = null;
+        let countdownInterval = null;
 
         // Check authentication on page load
         async function checkAuth() {
@@ -1173,9 +2630,270 @@
                 document.getElementById('userAvatar').textContent = userEmail.charAt(0).toUpperCase();
 
                 await loadConversations();
+
+                // Check if redirected from appointment reminder
+                await checkAndHandleAppointmentStart();
+
+                // Check if coming from email link with appointment
+                await checkAppointmentFromEmailLink();
             } catch (error) {
                 console.error('Auth check failed:', error);
                 window.location.href = '/';
+            }
+        }
+
+        // Check and handle appointment start
+        async function checkAndHandleAppointmentStart() {
+            try {
+                const response = await fetch('/api/voice/calendar/notifications/');
+                const data = await response.json();
+
+                if (data.notifications && data.notifications.length > 0) {
+                    const notification = data.notifications[0];
+
+                    // Backend handles conversation creation automatically
+                    // Just reload conversations to show the appointment conversation
+                    if (notification.type === 'start' && notification.auto_record) {
+                        console.log('Appointment starting - reloading conversations');
+                        await loadConversations();
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking appointment start:', error);
+            }
+        }
+
+        // Check if coming from email link with appointment ID
+        async function checkAppointmentFromEmailLink() {
+            try {
+                // Check URL parameters for appointment_id
+                const urlParams = new URLSearchParams(window.location.search);
+                const appointmentId = urlParams.get('appointment_id');
+
+                if (!appointmentId) {
+                    return;
+                }
+
+                console.log('Detected appointment from email link:', appointmentId);
+
+                // Fetch appointment details
+                const response = await fetch(`/api/voice/calendar/appointments/${appointmentId}/`);
+                if (!response.ok) {
+                    console.error('Failed to fetch appointment details');
+                    return;
+                }
+
+                const appointment = await response.json();
+                console.log('Appointment details:', appointment);
+
+                // Find and load the conversation
+                if (appointment.conversation_id) {
+                    await loadConversation(appointment.conversation_id);
+
+                    // Check if appointment is currently active (between start and end time)
+                    const now = new Date();
+                    const startTime = new Date(appointment.start_time);
+                    const endTime = new Date(appointment.end_time);
+
+                    if (now >= startTime && now <= endTime) {
+                        console.log('Appointment is active - starting automatic recording');
+                        showNotification('Appointment is active - starting recording...', 'info');
+
+                        // Wait a moment for conversation to load
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+
+                        // Start recording automatically
+                        await startAutomaticRecording(appointment);
+                    } else if (now < startTime) {
+                        const minutesUntilStart = Math.round((startTime - now) / 60000);
+                        showNotification(`Appointment starts in ${minutesUntilStart} minutes`, 'info');
+                    } else {
+                        showNotification('This appointment has ended', 'info');
+                    }
+                }
+
+                // Clean URL (remove appointment_id parameter)
+                const cleanUrl = window.location.pathname;
+                window.history.replaceState({}, document.title, cleanUrl);
+
+            } catch (error) {
+                console.error('Error checking appointment from email link:', error);
+            }
+        }
+
+        // Start automatic recording for appointment
+        async function startAutomaticRecording(appointment) {
+            try {
+                if (isRecording) {
+                    console.log('Recording already in progress');
+                    return;
+                }
+
+                // Calculate how long to record (until end time)
+                const now = new Date();
+                const endTime = new Date(appointment.end_time);
+                const recordDuration = Math.max(0, endTime - now);
+
+                console.log(`Will record for ${Math.round(recordDuration / 60000)} minutes until ${endTime.toLocaleTimeString()}`);
+
+                // Start recording
+                await toggleRecording();
+
+                // Set timer to stop recording at appointment end time
+                if (recordDuration > 0) {
+                    setTimeout(async () => {
+                        console.log('Appointment ended - stopping recording');
+                        if (isRecording) {
+                            await toggleRecording();
+                            showNotification('Recording stopped - appointment ended', 'success');
+                        }
+                    }, recordDuration);
+                }
+
+            } catch (error) {
+                console.error('Error starting automatic recording:', error);
+                showNotification('Failed to start automatic recording', 'error');
+            }
+        }
+
+        // Start appointment conversation (updated to accept notification parameter)
+        async function startAppointmentConversation(notification = null) {
+            const appointmentData = notification || currentAppointmentNotification;
+
+            if (!appointmentData) {
+                closeReminderPopup();
+                return;
+            }
+
+            closeReminderPopup();
+
+            try {
+                let conversationId;
+
+                // Check if notification has conversation_id directly
+                if (appointmentData.conversation_id) {
+                    conversationId = appointmentData.conversation_id;
+                    console.log('Using conversation_id from notification:', conversationId);
+                } else {
+                    // If no conversation_id, we need to wait for backend to create it
+                    // Reload conversations to ensure we have the latest
+                    await loadConversations();
+
+                    // Find the ONE conversation for this appointment
+                    // Title format: "🎙️ {title} - {date}"
+                    let appointmentConversation = conversations.find(conv =>
+                        conv.title.startsWith('🎙️') && conv.title.includes(appointmentData.title)
+                    );
+
+                    if (appointmentConversation) {
+                        // Found the conversation
+                        conversationId = appointmentConversation.id;
+                        console.log('Found appointment conversation:', conversationId);
+                    } else {
+                        // Conversation not created yet, wait longer and try multiple times
+                        console.log('Conversation not found yet, waiting and retrying...');
+                        showNotification('Preparing appointment conversation...', 'info');
+
+                        let attempts = 0;
+                        const maxAttempts = 10;  // Increased from 5 to 10
+
+                        while (attempts < maxAttempts && !conversationId) {
+                            await new Promise(resolve => setTimeout(resolve, 2000));
+                            await loadConversations();
+
+                            const retryConv = conversations.find(conv =>
+                                conv.title.startsWith('🎙️') && conv.title.includes(appointmentData.title)
+                            );
+
+                            if (retryConv) {
+                                conversationId = retryConv.id;
+                                console.log('Found appointment conversation on attempt', attempts + 1, ':', conversationId);
+                                break;
+                            }
+
+                            attempts++;
+                            console.log(`Retry attempt ${attempts}/${maxAttempts}...`);
+                        }
+
+                        if (!conversationId) {
+                            // One final attempt with longer wait
+                            console.log('Final attempt with 5-second wait...');
+                            showNotification('Still preparing... please wait', 'info');
+                            await new Promise(resolve => setTimeout(resolve, 5000));
+                            await loadConversations();
+
+                            appointmentConversation = conversations.find(conv =>
+                                conv.title.startsWith('🎙️') && conv.title.includes(appointmentData.title)
+                            );
+
+                            if (appointmentConversation) {
+                                conversationId = appointmentConversation.id;
+                                console.log('Found appointment conversation on final attempt:', conversationId);
+                            } else {
+                                throw new Error('Appointment conversation is still being created by the system. Please wait a moment and try again, or check the calendar page.');
+                            }
+                        }
+                    }
+                }
+
+                // Reload conversations to show the appointment conversation in sidebar
+                await loadConversations();
+
+                // Load this conversation
+                await loadConversation(conversationId);
+
+                // Notify user
+                showNotification(`Opened conversation for: ${appointmentData.title}`, 'success');
+
+                // Check if auto-record is enabled for this appointment
+                // Also check if type is 'start' OR if it's a reminder that's past start time
+                const shouldAutoRecord = appointmentData.auto_record &&
+                    (appointmentData.type === 'start' ||
+                     (appointmentData.type === 'reminder' && appointmentData.minutes_until_start <= 0));
+
+                if (shouldAutoRecord) {
+                    // Wait a moment for conversation to fully load
+                    await new Promise(resolve => setTimeout(resolve, 1500));
+
+                    // Automatically start recording
+                    if (!isRecording) {
+                        console.log('Auto-starting recording for appointment');
+                        showNotification('Starting automatic recording...', 'info');
+
+                        try {
+                            await toggleRecording();
+                            console.log('Recording started successfully');
+
+                            // Calculate end time and set auto-stop timer if available
+                            if (appointmentData.end_time) {
+                                const endTime = new Date(appointmentData.end_time);
+                                const now = new Date();
+                                const recordDuration = Math.max(0, endTime - now);
+
+                                console.log(`Will record for ${Math.round(recordDuration / 60000)} minutes until ${endTime.toLocaleTimeString()}`);
+
+                                if (recordDuration > 0) {
+                                    setTimeout(async () => {
+                                        console.log('Appointment ended - auto-stopping recording');
+                                        if (isRecording) {
+                                            await toggleRecording();
+                                            showNotification('Recording stopped - appointment ended', 'success');
+                                        }
+                                    }, recordDuration);
+                                }
+                            }
+                        } catch (error) {
+                            console.error('Failed to start automatic recording:', error);
+                            showNotification('Failed to start automatic recording. Please start manually.', 'error');
+                        }
+                    }
+                }
+
+                currentAppointmentNotification = null;
+
+            } catch (error) {
+                console.error('Error starting appointment conversation:', error);
+                showNotification('Failed to open appointment conversation: ' + error.message, 'error');
             }
         }
 
@@ -1253,9 +2971,13 @@
         }
 
         function renderConversationGroup(conversations) {
+            const sidebar = document.getElementById('sidebar');
+            const isCollapsed = sidebar.classList.contains('collapsed');
+
             return conversations.map(conv => `
                 <div class="conversation-item ${conv.id === currentConversationId ? 'active' : ''}"
                      onclick="loadConversation('${conv.id}')">
+                    ${isCollapsed ? '<span class="conversation-icon">💬</span>' : ''}
                     <div class="conversation-content">
                         <div class="conversation-title">${conv.title}</div>
                         <div class="conversation-time">${formatRelativeTime(conv.last_activity)}</div>
@@ -1281,16 +3003,22 @@
 
                 document.getElementById('chatTitle').textContent = data.title || 'AI Companion';
 
-                if (data.messages && data.messages.length > 0) {
-                    data.messages.forEach(msg => {
+                currentMessages = data.messages || [];
+
+                if (currentMessages.length > 0) {
+                    // Show summary section when conversation is loaded
+                    document.getElementById('summarySection').classList.add('show');
+
+                    currentMessages.forEach(msg => {
                         if (msg.message_type === 'user') {
-                            addUserMessage(msg.transcribed_text, msg.created_at, false);
+                            addUserMessage(msg.transcribed_text, msg.created_at, msg.audio_file, msg.id, false, msg);
                         } else {
-                            addBotMessage(msg.response_text, msg.created_at, false);
+                            addBotMessage(msg.response_text, msg.created_at, msg.id, false);
                         }
                     });
                 } else {
                     showWelcomeScreen();
+                    document.getElementById('summarySection').classList.remove('show');
                 }
 
                 scrollToBottom();
@@ -1352,6 +3080,21 @@
             }
         }
 
+        // Toggle sidebar collapse
+        function toggleSidebarCollapse() {
+            const sidebar = document.getElementById('sidebar');
+            const icon = document.getElementById('sidebarToggleIcon');
+            sidebar.classList.toggle('collapsed');
+
+            if (sidebar.classList.contains('collapsed')) {
+                icon.textContent = '▶';
+            } else {
+                icon.textContent = '◀';
+            }
+
+            renderConversations();
+        }
+
         // Toggle recording
         async function toggleRecording() {
             if (!isRecording) {
@@ -1367,7 +3110,8 @@
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 mediaRecorder = new MediaRecorder(stream);
                 audioChunks = [];
-                selectedFile = null;
+                selectedAudioFile = null;
+                selectedAttachmentFile = null;
                 document.getElementById('fileName').textContent = '';
 
                 mediaRecorder.ondataavailable = (event) => {
@@ -1376,7 +3120,7 @@
 
                 mediaRecorder.onstop = () => {
                     const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                    selectedFile = new File([audioBlob], 'recording.webm', { type: 'audio/webm' });
+                    selectedAudioFile = new File([audioBlob], 'recording.webm', { type: 'audio/webm' });
                     document.getElementById('sendBtn').disabled = false;
                     document.getElementById('fileName').innerHTML = '<span>🎵</span><span>Audio recorded - Ready to send</span>';
                 };
@@ -1385,7 +3129,7 @@
                 isRecording = true;
 
                 document.getElementById('recordBtn').classList.add('recording');
-                document.getElementById('recordingBanner').classList.add('show');
+                document.getElementById('recordingBanner').style.display = 'flex';
             } catch (error) {
                 showNotification('Microphone access denied. Please allow microphone access.', 'error');
                 console.error('Recording error:', error);
@@ -1399,28 +3143,71 @@
                 isRecording = false;
 
                 document.getElementById('recordBtn').classList.remove('recording');
-                document.getElementById('recordingBanner').classList.remove('show');
+                document.getElementById('recordingBanner').style.display = 'none';
 
                 // Stop all audio tracks
                 mediaRecorder.stream.getTracks().forEach(track => track.stop());
             }
         }
 
-        // Handle file selection
-        function handleFileSelect() {
-            const fileInput = document.getElementById('fileInput');
-            selectedFile = fileInput.files[0];
+        // Handle audio file selection
+        function handleAudioSelect() {
+            const audioInput = document.getElementById('audioInput');
+            selectedAudioFile = audioInput.files[0];
 
-            if (selectedFile) {
-                document.getElementById('fileName').innerHTML = `<span>📁</span><span>${selectedFile.name}</span>`;
+            if (selectedAudioFile) {
+                updateFileDisplay();
                 document.getElementById('sendBtn').disabled = false;
             }
         }
 
+        // Handle attachment file selection
+        function handleAttachmentSelect() {
+            const attachmentInput = document.getElementById('attachmentInput');
+            selectedAttachmentFile = attachmentInput.files[0];
+
+            if (selectedAttachmentFile) {
+                updateFileDisplay();
+                document.getElementById('sendBtn').disabled = false;
+            }
+        }
+
+        // Update file display to show selected files
+        function updateFileDisplay() {
+            const fileNameEl = document.getElementById('fileName');
+            let displayText = '';
+
+            if (selectedAudioFile) {
+                displayText += `<span>🎤</span><span>${selectedAudioFile.name}</span>`;
+            }
+
+            if (selectedAttachmentFile) {
+                if (displayText) displayText += ' ';
+                const icon = getFileIcon(selectedAttachmentFile.name);
+                displayText += `<span>${icon}</span><span>${selectedAttachmentFile.name}</span>`;
+            }
+
+            fileNameEl.innerHTML = displayText;
+        }
+
+        // Get file icon based on extension
+        function getFileIcon(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            const iconMap = {
+                'pdf': '📄',
+                'doc': '📝', 'docx': '📝', 'txt': '📝',
+                'xls': '📊', 'xlsx': '📊',
+                'ppt': '📊', 'pptx': '📊',
+                'jpg': '🖼️', 'jpeg': '🖼️', 'png': '🖼️', 'gif': '🖼️', 'bmp': '🖼️', 'svg': '🖼️', 'webp': '🖼️',
+                'zip': '📦', 'rar': '📦', '7z': '📦', 'tar': '📦', 'gz': '📦'
+            };
+            return iconMap[ext] || '📎';
+        }
+
         // Send message
         async function sendMessage() {
-            if (!selectedFile) {
-                showNotification('Please record or select an audio file first', 'error');
+            if (!selectedAudioFile && !selectedAttachmentFile) {
+                showNotification('Please record audio, select an audio file, or attach a file', 'error');
                 return;
             }
 
@@ -1432,9 +3219,10 @@
             const sendBtn = document.getElementById('sendBtn');
             sendBtn.disabled = true;
 
-            // Clear file input
+            // Clear file inputs
             document.getElementById('fileName').textContent = '';
-            document.getElementById('fileInput').value = '';
+            document.getElementById('audioInput').value = '';
+            document.getElementById('attachmentInput').value = '';
 
             // Remove welcome screen
             const welcomeScreen = document.querySelector('.welcome-screen');
@@ -1442,29 +3230,71 @@
                 welcomeScreen.remove();
             }
 
-            // Show typing indicator
-            showTypingIndicator();
+            // Show summary section
+            document.getElementById('summarySection').classList.add('show');
+
+            // Show typing indicator with upload message
+            const uploadMsg = selectedAudioFile ? 'Uploading and transcribing audio...' : 'Uploading attachment...';
+            showTypingIndicator(uploadMsg);
 
             const formData = new FormData();
-            formData.append('audio_file', selectedFile);
+            if (selectedAudioFile) {
+                formData.append('audio_file', selectedAudioFile);
+            }
+            if (selectedAttachmentFile) {
+                formData.append('attachment_file', selectedAttachmentFile);
+            }
             formData.append('conversation_id', currentConversationId);
 
+            // Get CSRF token
+            const csrfToken = getCookie('csrftoken');
+
             try {
+                // Add timeout handling for long uploads (2 minutes)
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 120000);
+
                 const response = await fetch('/api/voice/chat/send/', {
                     method: 'POST',
-                    body: formData
+                    headers: {
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: formData,
+                    signal: controller.signal
                 });
 
+                clearTimeout(timeoutId);
                 const data = await response.json();
 
                 hideTypingIndicator();
 
                 if (response.ok) {
                     // Add user message
-                    addUserMessage(data.user_message.transcribed_text);
+                    // If there's no transcribed text but there's an attachment, show attachment name
+                    let displayText = data.user_message.transcribed_text;
+                    if (!displayText && data.user_message.attachment_name) {
+                        displayText = `📎 ${data.user_message.attachment_name}`;
+                    }
+
+                    addUserMessage(
+                        displayText,
+                        data.user_message.created_at,
+                        data.user_message.audio_file,
+                        data.user_message.id,
+                        true,
+                        data.user_message
+                    );
 
                     // Add bot response
-                    addBotMessage(data.bot_message.response_text);
+                    addBotMessage(
+                        data.bot_message.response_text,
+                        data.bot_message.created_at,
+                        data.bot_message.id
+                    );
+
+                    // Update current messages
+                    currentMessages.push(data.user_message);
+                    currentMessages.push(data.bot_message);
 
                     scrollToBottom();
 
@@ -1476,28 +3306,70 @@
                 }
             } catch (error) {
                 hideTypingIndicator();
-                showNotification('Network error. Please try again.', 'error');
+                if (error.name === 'AbortError') {
+                    showNotification('Upload timed out. Please try a shorter audio file or check your connection.', 'error');
+                } else {
+                    showNotification('Network error. Please check your connection and try again.', 'error');
+                }
+                console.error('Send message error:', error);
                 sendBtn.disabled = false;
             }
 
-            selectedFile = null;
+            selectedAudioFile = null;
+            selectedAttachmentFile = null;
         }
 
         // Add user message to chat
-        function addUserMessage(text, timestamp = null, animate = true) {
+        function addUserMessage(text, timestamp = null, audioFile = null, messageId = null, animate = true, messageData = null) {
             const messagesWrapper = document.getElementById('messagesWrapper');
 
             const messageDiv = document.createElement('div');
             messageDiv.className = 'message-wrapper user';
+            messageDiv.dataset.messageId = messageId;
+
+            // Store message data for context sidebar
+            if (messageData) {
+                messageDiv.dataset.messageData = JSON.stringify(messageData);
+            }
+
+            let audioHTML = '';
+            if (audioFile) {
+                audioHTML = `
+                    <div class="audio-player">
+                        <audio controls>
+                            <source src="${audioFile}" type="audio/mpeg">
+                            Your browser does not support the audio element.
+                        </audio>
+                    </div>
+                `;
+            }
+
+            let transcriptionHTML = '';
+            if (text) {
+                transcriptionHTML = `<div class="transcription-text">"${text}"</div>`;
+            }
+
+            // Store message data in a global object
+            if (messageData && messageId) {
+                window.messageDataStore = window.messageDataStore || {};
+                window.messageDataStore[messageId] = messageData;
+            }
+
             messageDiv.innerHTML = `
                 <div class="message-avatar">👤</div>
                 <div class="message-content">
+                    <div class="message-actions">
+                        <button class="context-btn" onclick="openContextSidebar('${messageId}')" title="Ask about this message">
+                            💡
+                        </button>
+                    </div>
                     <div class="message-bubble">
                         <div class="audio-badge">
                             <span>🎵</span>
                             <span>Voice message</span>
                         </div>
-                        <div>${text}</div>
+                        ${audioHTML}
+                        ${transcriptionHTML}
                     </div>
                     <div class="message-time">
                         <span>${formatTime(timestamp)}</span>
@@ -1509,14 +3381,31 @@
         }
 
         // Add bot message to chat
-        function addBotMessage(text, timestamp = null, animate = true) {
+        function addBotMessage(text, timestamp = null, messageId = null, animate = true) {
             const messagesWrapper = document.getElementById('messagesWrapper');
 
             const messageDiv = document.createElement('div');
             messageDiv.className = 'message-wrapper bot';
+            messageDiv.dataset.messageId = messageId;
+
+            // Store bot message data
+            if (messageId) {
+                window.messageDataStore = window.messageDataStore || {};
+                window.messageDataStore[messageId] = {
+                    message_type: 'bot',
+                    response_text: text,
+                    created_at: timestamp
+                };
+            }
+
             messageDiv.innerHTML = `
                 <div class="message-avatar">🤖</div>
                 <div class="message-content">
+                    <div class="message-actions">
+                        <button class="context-btn" onclick="openContextSidebar('${messageId}')" title="Ask about this message">
+                            💡
+                        </button>
+                    </div>
                     <div class="message-bubble">${text}</div>
                     <div class="message-time">
                         <span>${formatTime(timestamp)}</span>
@@ -1528,13 +3417,13 @@
         }
 
         // Show typing indicator
-        function showTypingIndicator() {
+        function showTypingIndicator(message = null) {
             const messagesWrapper = document.getElementById('messagesWrapper');
             const indicator = document.createElement('div');
             indicator.id = 'typingIndicator';
             indicator.className = 'typing-wrapper show';
-            indicator.innerHTML = `
-                <div class="message-avatar">🤖</div>
+
+            let content = `
                 <div class="typing-indicator">
                     <div class="typing-dots">
                         <span></span>
@@ -1542,6 +3431,24 @@
                         <span></span>
                     </div>
                 </div>
+            `;
+
+            if (message) {
+                content = `
+                    <div class="typing-indicator">
+                        <div class="typing-dots">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                        <div class="typing-message" style="margin-left: 8px; font-size: 13px; color: #999;">${message}</div>
+                    </div>
+                `;
+            }
+
+            indicator.innerHTML = `
+                <div class="message-avatar">🤖</div>
+                ${content}
             `;
             messagesWrapper.appendChild(indicator);
             scrollToBottom();
@@ -1588,6 +3495,526 @@
                 </div>
             `;
         }
+
+        // Summary functions
+        function toggleSummaryDropdown() {
+            const dropdown = document.getElementById('summaryDropdown');
+            dropdown.classList.toggle('show');
+
+            // Close dropdown when clicking outside
+            if (dropdown.classList.contains('show')) {
+                setTimeout(() => {
+                    document.addEventListener('click', closeSummaryDropdown);
+                }, 0);
+            }
+        }
+
+        function closeSummaryDropdown(e) {
+            const dropdown = document.getElementById('summaryDropdown');
+            const btn = document.getElementById('summaryBtn');
+
+            if (!dropdown.contains(e.target) && !btn.contains(e.target)) {
+                dropdown.classList.remove('show');
+                document.removeEventListener('click', closeSummaryDropdown);
+            }
+        }
+
+        async function generateSummary(summaryType) {
+            // Close dropdown
+            document.getElementById('summaryDropdown').classList.remove('show');
+
+            if (!currentConversationId) {
+                showNotification('No active conversation', 'error');
+                return;
+            }
+
+            const summaryBtn = document.getElementById('summaryBtn');
+            summaryBtn.disabled = true;
+
+            try {
+                const response = await fetch('/api/voice/chat/summary/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        conversation_id: currentConversationId,
+                        summary_type: summaryType
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    const summaryCard = document.getElementById('summaryCard');
+                    const summaryTypeEl = document.getElementById('summaryType');
+                    const summaryText = document.getElementById('summaryText');
+
+                    summaryTypeEl.textContent = summaryType === 'first_message' ? 'First Message Summary' : 'Full Conversation Summary';
+                    summaryText.textContent = data.summary;
+                    summaryCard.classList.add('show');
+
+                    showNotification('Summary generated successfully!', 'success');
+                } else {
+                    showNotification(data.error || 'Failed to generate summary', 'error');
+                }
+            } catch (error) {
+                console.error('Failed to generate summary:', error);
+                showNotification('Failed to generate summary', 'error');
+            } finally {
+                summaryBtn.disabled = false;
+            }
+        }
+
+        // Context sidebar functions
+        function openContextSidebar(messageId) {
+            // Get message data from store
+            const messageData = window.messageDataStore ? window.messageDataStore[messageId] : null;
+            const messageText = messageData ? (messageData.transcribed_text || messageData.response_text || 'No text available') : 'Message text not found';
+
+            selectedMessageId = messageId;
+            selectedMessageText = messageText;
+
+            const sidebar = document.getElementById('rightSidebar');
+            const mainContent = document.getElementById('mainContent');
+
+            document.getElementById('contextMessageText').textContent = messageText;
+            document.getElementById('contextInput').value = '';
+            document.getElementById('contextSendBtn').disabled = true;
+
+            // Display entity extraction data
+            displayEntityData(messageData);
+
+            sidebar.classList.add('open');
+            mainContent.classList.add('right-sidebar-open');
+
+            // Load existing questions
+            loadContextQuestions(messageId);
+        }
+
+        // Display entity extraction data in sidebar
+        function displayEntityData(messageData) {
+            const entityInfo = document.getElementById('entityInfo');
+
+            if (!messageData || messageData.message_type !== 'user') {
+                entityInfo.style.display = 'none';
+                return;
+            }
+
+            // Show entity info
+            entityInfo.style.display = 'block';
+
+            // Intent
+            displayEntityField('intent', messageData.intent, 'intentSection', 'intentValue');
+
+            // Keywords
+            displayEntityTags('keywords', messageData.keywords, 'keywordsSection', 'keywordsTags');
+
+            // Entities
+            displayEntityTags('entities', messageData.entities, 'entitiesSection', 'entitiesTags');
+
+            // Domain Terms
+            displayEntityTags('domain_terms', messageData.domain_terms, 'domainTermsSection', 'domainTermsTags');
+
+            // Action Items
+            displayEntityList('action_items', messageData.action_items, 'actionItemsSection', 'actionItemsList');
+
+            // Topics
+            displayEntityTags('topics', messageData.topics, 'topicsSection', 'topicsTags');
+        }
+
+        // Helper function to display a single entity field
+        function displayEntityField(field, value, sectionId, valueId) {
+            const section = document.getElementById(sectionId);
+            const valueEl = document.getElementById(valueId);
+
+            if (value) {
+                section.style.display = 'block';
+                valueEl.textContent = value;
+            } else {
+                section.style.display = 'none';
+            }
+        }
+
+        // Helper function to display entity tags
+        function displayEntityTags(field, values, sectionId, tagsId) {
+            const section = document.getElementById(sectionId);
+            const tagsEl = document.getElementById(tagsId);
+
+            if (values && values.length > 0) {
+                section.style.display = 'block';
+                tagsEl.innerHTML = values.map(tag =>
+                    `<span class="entity-tag">${tag}</span>`
+                ).join('');
+            } else {
+                section.style.display = 'none';
+            }
+        }
+
+        // Helper function to display entity list items
+        function displayEntityList(field, values, sectionId, listId) {
+            const section = document.getElementById(sectionId);
+            const listEl = document.getElementById(listId);
+
+            if (values && values.length > 0) {
+                section.style.display = 'block';
+                listEl.innerHTML = values.map(item =>
+                    `<div class="entity-list-item">${item}</div>`
+                ).join('');
+            } else {
+                section.style.display = 'none';
+            }
+        }
+
+        function closeContextSidebar() {
+            const sidebar = document.getElementById('rightSidebar');
+            const mainContent = document.getElementById('mainContent');
+
+            sidebar.classList.remove('open');
+            mainContent.classList.remove('right-sidebar-open');
+
+            selectedMessageId = null;
+            selectedMessageText = '';
+        }
+
+        async function loadContextQuestions(messageId) {
+            const container = document.getElementById('contextQuestionsContainer');
+
+            try {
+                const response = await fetch(`/api/voice/chat/context/questions/?conversation_id=${currentConversationId}&message_id=${messageId}`);
+                const data = await response.json();
+
+                if (response.ok && data.questions && data.questions.length > 0) {
+                    container.innerHTML = data.questions.map(q => `
+                        <div class="context-question-item">
+                            <div class="context-question">${q.question}</div>
+                            <div class="context-answer">${q.answer}</div>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = `
+                        <div class="no-questions-message">
+                            <div class="no-questions-icon">💭</div>
+                            <div>No questions asked yet.<br>Ask something about this message!</div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Failed to load context questions:', error);
+                container.innerHTML = `
+                    <div class="no-questions-message">
+                        <div class="no-questions-icon">💭</div>
+                        <div>No questions asked yet.<br>Ask something about this message!</div>
+                    </div>
+                `;
+            }
+        }
+
+        async function sendContextQuestion() {
+            const input = document.getElementById('contextInput');
+            const question = input.value.trim();
+
+            if (!question || !selectedMessageId || !currentConversationId) {
+                return;
+            }
+
+            const sendBtn = document.getElementById('contextSendBtn');
+            sendBtn.disabled = true;
+
+            try {
+                const response = await fetch('/api/voice/chat/context/question/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        conversation_id: currentConversationId,
+                        message_id: selectedMessageId,
+                        question: question
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Clear input
+                    input.value = '';
+
+                    // Reload questions
+                    await loadContextQuestions(selectedMessageId);
+
+                    showNotification('Question answered!', 'success');
+                } else {
+                    showNotification(data.error || 'Failed to ask question', 'error');
+                }
+            } catch (error) {
+                console.error('Failed to send context question:', error);
+                showNotification('Failed to ask question', 'error');
+            } finally {
+                sendBtn.disabled = false;
+            }
+        }
+
+        function handleContextInputKeydown(event) {
+            const input = event.target;
+            const sendBtn = document.getElementById('contextSendBtn');
+
+            // Enable/disable send button
+            sendBtn.disabled = !input.value.trim();
+
+            // Send on Enter (without Shift)
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                if (!sendBtn.disabled) {
+                    sendContextQuestion();
+                }
+            }
+        }
+
+        // ========== CONTEXT SIDEBAR FILE UPLOAD FUNCTIONS ==========
+        let contextAudioFile = null;
+        let contextAttachmentFile = null;
+
+        // Handle context audio file selection
+        function handleContextAudioSelect() {
+            const audioInput = document.getElementById('contextAudioInput');
+            contextAudioFile = audioInput.files[0];
+
+            if (contextAudioFile) {
+                updateContextFileDisplay();
+                showContextUploadButton();
+            }
+        }
+
+        // Handle context attachment file selection
+        function handleContextAttachmentSelect() {
+            const attachmentInput = document.getElementById('contextAttachmentInput');
+            contextAttachmentFile = attachmentInput.files[0];
+
+            if (contextAttachmentFile) {
+                updateContextFileDisplay();
+                showContextUploadButton();
+            }
+        }
+
+        // Update context file display
+        function updateContextFileDisplay() {
+            const display = document.getElementById('contextFileDisplay');
+            let html = '';
+
+            if (contextAudioFile) {
+                html += `<div class="context-file-item">
+                    <span>🎤</span>
+                    <span>${contextAudioFile.name}</span>
+                    <button onclick="clearContextAudio()" style="margin-left: auto; background: none; border: none; cursor: pointer; font-size: 18px;">✕</button>
+                </div>`;
+            }
+
+            if (contextAttachmentFile) {
+                const icon = getFileIcon(contextAttachmentFile.name);
+                html += `<div class="context-file-item">
+                    <span>${icon}</span>
+                    <span>${contextAttachmentFile.name}</span>
+                    <button onclick="clearContextAttachment()" style="margin-left: auto; background: none; border: none; cursor: pointer; font-size: 18px;">✕</button>
+                </div>`;
+            }
+
+            display.innerHTML = html;
+        }
+
+        // Show context upload button
+        function showContextUploadButton() {
+            const btn = document.getElementById('contextUploadSendBtn');
+            btn.style.display = 'block';
+            btn.disabled = false;
+        }
+
+        // Clear context audio
+        function clearContextAudio() {
+            contextAudioFile = null;
+            document.getElementById('contextAudioInput').value = '';
+            updateContextFileDisplay();
+            if (!contextAttachmentFile) {
+                document.getElementById('contextUploadSendBtn').style.display = 'none';
+            }
+        }
+
+        // Clear context attachment
+        function clearContextAttachment() {
+            contextAttachmentFile = null;
+            document.getElementById('contextAttachmentInput').value = '';
+            updateContextFileDisplay();
+            if (!contextAudioFile) {
+                document.getElementById('contextUploadSendBtn').style.display = 'none';
+            }
+        }
+
+        // Send context message with files
+        async function sendContextMessage() {
+            if (!contextAudioFile && !contextAttachmentFile) {
+                showNotification('Please select a file to upload', 'error');
+                return;
+            }
+
+            if (!currentConversationId || !selectedMessageId) {
+                showNotification('Please select a message first', 'error');
+                return;
+            }
+
+            const uploadBtn = document.getElementById('contextUploadSendBtn');
+            uploadBtn.disabled = true;
+
+            const formData = new FormData();
+            if (contextAudioFile) {
+                formData.append('audio_file', contextAudioFile);
+            }
+            if (contextAttachmentFile) {
+                formData.append('attachment_file', contextAttachmentFile);
+            }
+            formData.append('conversation_id', currentConversationId);
+            formData.append('context_message_id', selectedMessageId);
+
+            // Get CSRF token
+            const csrfToken = getCookie('csrftoken');
+
+            try {
+                showNotification('Uploading file...', 'info');
+
+                const response = await fetch('/api/voice/chat/send/', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showNotification('File uploaded successfully!', 'success');
+
+                    // Add the file response to context questions display (in Message Context sidebar)
+                    const container = document.getElementById('contextQuestionsContainer');
+                    const fileName = contextAudioFile ? contextAudioFile.name : contextAttachmentFile.name;
+                    const fileIcon = contextAudioFile ? '🎤' : getFileIcon(fileName);
+
+                    // Create a question-answer item for the file upload
+                    const fileResponseHtml = `
+                        <div class="context-question-item">
+                            <div class="context-question">
+                                <span>${fileIcon}</span>
+                                <span>Uploaded: ${fileName}</span>
+                            </div>
+                            <div class="context-answer">${data.response || data.transcription || 'File uploaded and analyzed.'}</div>
+                        </div>
+                    `;
+
+                    // If container has "no questions" message, replace it
+                    if (container.querySelector('.no-questions-message')) {
+                        container.innerHTML = fileResponseHtml;
+                    } else {
+                        // Append to existing questions
+                        container.insertAdjacentHTML('beforeend', fileResponseHtml);
+                    }
+
+                    // Clear files
+                    contextAudioFile = null;
+                    contextAttachmentFile = null;
+                    document.getElementById('contextAudioInput').value = '';
+                    document.getElementById('contextAttachmentInput').value = '';
+                    document.getElementById('contextFileDisplay').innerHTML = '';
+                    document.getElementById('contextUploadSendBtn').style.display = 'none';
+
+                    // DO NOT reload conversation - keep response in sidebar only
+
+                } else {
+                    showNotification('Failed to upload file: ' + (data.error || 'Unknown error'), 'error');
+                }
+            } catch (error) {
+                console.error('Error uploading file:', error);
+                showNotification('Failed to upload file', 'error');
+            } finally {
+                uploadBtn.disabled = false;
+            }
+        }
+
+        // Context recording variables
+        let isContextRecording = false;
+        let contextMediaRecorder = null;
+        let contextAudioChunks = [];
+
+        // Toggle context recording
+        async function toggleContextRecording() {
+            if (!selectedMessageId || !currentConversationId) {
+                showNotification('Please select a message first', 'error');
+                return;
+            }
+
+            const recordBtn = document.getElementById('contextRecordBtn');
+            const recordingBanner = document.getElementById('contextRecordingBanner');
+
+            if (!isContextRecording) {
+                // Start recording
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    contextMediaRecorder = new MediaRecorder(stream);
+                    contextAudioChunks = [];
+
+                    contextMediaRecorder.ondataavailable = (event) => {
+                        if (event.data.size > 0) {
+                            contextAudioChunks.push(event.data);
+                        }
+                    };
+
+                    contextMediaRecorder.onstop = async () => {
+                        const audioBlob = new Blob(contextAudioChunks, { type: 'audio/webm' });
+                        const audioFile = new File([audioBlob], `context_recording_${Date.now()}.webm`, { type: 'audio/webm' });
+
+                        // Set as context audio file and show upload button
+                        contextAudioFile = audioFile;
+                        updateContextFileDisplay();
+                        showContextUploadButton();
+
+                        // Stop all tracks
+                        stream.getTracks().forEach(track => track.stop());
+                    };
+
+                    contextMediaRecorder.start();
+                    isContextRecording = true;
+                    recordBtn.querySelector('.btn-label').textContent = 'Stop';
+                    recordBtn.querySelector('span:first-child').textContent = '⏹️';
+                    recordingBanner.style.display = 'flex';
+
+                    showNotification('Recording started for context message', 'success');
+
+                } catch (error) {
+                    console.error('Error starting context recording:', error);
+                    showNotification('Failed to start recording. Please check microphone permissions.', 'error');
+                }
+            } else {
+                // Stop recording
+                if (contextMediaRecorder && contextMediaRecorder.state !== 'inactive') {
+                    contextMediaRecorder.stop();
+                }
+
+                isContextRecording = false;
+                recordBtn.querySelector('.btn-label').textContent = 'Record';
+                recordBtn.querySelector('span:first-child').textContent = '🔴';
+                recordingBanner.style.display = 'none';
+
+                showNotification('Recording stopped. Click Send to upload.', 'success');
+            }
+        }
+
+        // Enable context send button on input
+        document.addEventListener('DOMContentLoaded', () => {
+            const contextInput = document.getElementById('contextInput');
+            if (contextInput) {
+                contextInput.addEventListener('input', (e) => {
+                    document.getElementById('contextSendBtn').disabled = !e.target.value.trim();
+                });
+            }
+        });
 
         // Format timestamp
         function formatTime(timestamp) {
@@ -1645,6 +4072,283 @@
             document.getElementById('sidebar').classList.toggle('open');
         }
 
+        // ===== Appointment Reminder Functions =====
+
+        // Check for appointment notifications
+        async function checkAppointmentNotifications() {
+            try {
+                const response = await fetch('/api/voice/calendar/notifications/');
+                const data = await response.json();
+
+                if (data.notifications && data.notifications.length > 0) {
+                    // Show the first notification
+                    showReminderPopup(data.notifications[0]);
+                }
+            } catch (error) {
+                console.error('Error checking appointment notifications:', error);
+            }
+        }
+
+        // Show reminder popup
+        function showReminderPopup(notification) {
+            currentAppointmentNotification = notification;
+
+            const popup = document.getElementById('reminderPopup');
+            const overlay = document.getElementById('reminderOverlay');
+            const icon = document.getElementById('reminderPopupIcon');
+            const title = document.getElementById('reminderPopupTitle');
+            const subtitle = document.getElementById('reminderPopupSubtitle');
+            const appointmentTitle = document.getElementById('reminderAppointmentTitle');
+            const colorIndicator = document.getElementById('reminderColorIndicator');
+            const detailsContainer = document.getElementById('reminderDetailsContainer');
+            const actionText = document.getElementById('reminderActionText');
+
+            // Set icon and title based on notification type
+            if (notification.type === 'start') {
+                icon.textContent = '🎙️';
+                title.textContent = 'Appointment Starting Now!';
+                subtitle.textContent = 'It\'s time for your appointment';
+                actionText.textContent = 'Start Recording';
+            } else {
+                icon.textContent = '⏰';
+                title.textContent = 'Appointment Reminder';
+                subtitle.textContent = 'Your appointment is coming up';
+                actionText.textContent = 'Prepare';
+            }
+
+            // Set appointment title and color
+            appointmentTitle.innerHTML = `
+                <span class="reminder-color-indicator" style="background: ${notification.color || '#8B5CF6'}"></span>
+                <span>${notification.title}</span>
+            `;
+
+            // Format start time
+            const startTime = new Date(notification.start_time);
+            const endTime = new Date(notification.end_time);
+            const timeStr = startTime.toLocaleString('en-US', {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+            });
+
+            // Build details HTML
+            let detailsHTML = `
+                <div class="reminder-detail-item">
+                    <div class="reminder-detail-icon">🕐</div>
+                    <div class="reminder-detail-content">
+                        <div class="reminder-detail-label">Time</div>
+                        <div class="reminder-detail-value">${timeStr}</div>
+                    </div>
+                </div>
+            `;
+
+            if (notification.location) {
+                detailsHTML += `
+                    <div class="reminder-detail-item">
+                        <div class="reminder-detail-icon">📍</div>
+                        <div class="reminder-detail-content">
+                            <div class="reminder-detail-label">Location</div>
+                            <div class="reminder-detail-value">${notification.location}</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (notification.meeting_url) {
+                detailsHTML += `
+                    <div class="reminder-detail-item">
+                        <div class="reminder-detail-icon">🔗</div>
+                        <div class="reminder-detail-content">
+                            <div class="reminder-detail-label">Meeting Link</div>
+                            <div class="reminder-detail-value">
+                                <a href="${notification.meeting_url}" target="_blank" style="color: var(--copilot-purple); text-decoration: none;">
+                                    Join Meeting
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (notification.description) {
+                detailsHTML += `
+                    <div class="reminder-detail-item">
+                        <div class="reminder-detail-icon">📝</div>
+                        <div class="reminder-detail-content">
+                            <div class="reminder-detail-label">Description</div>
+                            <div class="reminder-detail-value">${notification.description}</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            detailsContainer.innerHTML = detailsHTML;
+
+            // Start countdown
+            startCountdown(notification.minutes_until_start);
+
+            // Show popup
+            popup.classList.add('show');
+            overlay.classList.add('show');
+
+            // Play notification sound
+            playNotificationSound();
+        }
+
+        // Start countdown timer
+        function startCountdown(minutesUntilStart) {
+            const countdownElement = document.getElementById('reminderCountdown');
+            const timeElement = document.getElementById('reminderCountdownTime');
+
+            if (minutesUntilStart <= 1) {
+                countdownElement.innerHTML = `
+                    <div class="reminder-countdown-time">Starting Now!</div>
+                    <div class="reminder-countdown-label">Your appointment is beginning</div>
+                `;
+                return;
+            }
+
+            // Clear existing interval
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+
+            let remainingSeconds = Math.floor(minutesUntilStart * 60);
+
+            countdownInterval = setInterval(() => {
+                remainingSeconds--;
+
+                if (remainingSeconds <= 0) {
+                    clearInterval(countdownInterval);
+                    countdownElement.innerHTML = `
+                        <div class="reminder-countdown-time">Starting Now!</div>
+                        <div class="reminder-countdown-label">Your appointment is beginning</div>
+                    `;
+                    return;
+                }
+
+                const minutes = Math.floor(remainingSeconds / 60);
+                const seconds = remainingSeconds % 60;
+                timeElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        // Play notification sound
+        function playNotificationSound() {
+            // Create a simple beep sound using Web Audio API
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.5);
+            } catch (error) {
+                console.log('Could not play notification sound:', error);
+            }
+        }
+
+        // Close reminder popup
+        function closeReminderPopup() {
+            const popup = document.getElementById('reminderPopup');
+            const overlay = document.getElementById('reminderOverlay');
+
+            popup.classList.remove('show');
+            overlay.classList.remove('show');
+
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
+        }
+
+        // Dismiss reminder
+        function dismissReminder() {
+            closeReminderPopup();
+            currentAppointmentNotification = null;
+        }
+
+        // Start notification polling
+        function startNotificationPolling() {
+            // Check immediately
+            checkAppointmentNotifications();
+
+            // Then check every 30 seconds
+            if (notificationCheckInterval) {
+                clearInterval(notificationCheckInterval);
+            }
+
+            notificationCheckInterval = setInterval(() => {
+                checkAppointmentNotifications();
+            }, 30000); // 30 seconds
+        }
+
+        // Stop notification polling
+        function stopNotificationPolling() {
+            if (notificationCheckInterval) {
+                clearInterval(notificationCheckInterval);
+                notificationCheckInterval = null;
+            }
+        }
+
+        // ===== Sidebar Resize Functionality =====
+        let isResizingSidebar = false;
+        let sidebarStartWidth = 0;
+        let resizeStartX = 0;
+
+        function initSidebarResize() {
+            const resizeHandle = document.getElementById('sidebarResizeHandle');
+            const sidebar = document.getElementById('rightSidebar');
+
+            if (!resizeHandle || !sidebar) return;
+
+            resizeHandle.addEventListener('mousedown', (e) => {
+                isResizingSidebar = true;
+                sidebarStartWidth = sidebar.offsetWidth;
+                resizeStartX = e.clientX;
+                sidebar.classList.add('resizing');
+                document.body.style.cursor = 'col-resize';
+                document.body.style.userSelect = 'none';
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isResizingSidebar) return;
+
+                const deltaX = resizeStartX - e.clientX;
+                const newWidth = sidebarStartWidth + deltaX;
+
+                // Enforce min and max width
+                const minWidth = 320;
+                const maxWidth = window.innerWidth * 0.5;
+
+                if (newWidth >= minWidth && newWidth <= maxWidth) {
+                    sidebar.style.width = newWidth + 'px';
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isResizingSidebar) {
+                    isResizingSidebar = false;
+                    sidebar.classList.remove('resizing');
+                    document.body.style.cursor = '';
+                    document.body.style.userSelect = '';
+                }
+            });
+        }
+
         // Logout
         async function logout() {
             try {
@@ -1658,14 +4362,42 @@
             }
         }
 
+        // Check for pending appointment from calendar page
+        function checkPendingAppointment() {
+            try {
+                const pendingAppointment = sessionStorage.getItem('pendingAppointment');
+                if (pendingAppointment) {
+                    // Clear it immediately to prevent re-triggering
+                    sessionStorage.removeItem('pendingAppointment');
+
+                    const notification = JSON.parse(pendingAppointment);
+                    console.log('Found pending appointment:', notification);
+
+                    // Show the reminder popup after a short delay to let page load
+                    setTimeout(() => {
+                        showReminderPopup(notification);
+                    }, 1000);
+                }
+            } catch (error) {
+                console.error('Error checking pending appointment:', error);
+            }
+        }
+
         // Initialize
         window.addEventListener('DOMContentLoaded', () => {
             checkAuth();
+            // Check if redirected from calendar with a pending appointment
+            checkPendingAppointment();
+            // Start checking for appointment notifications
+            startNotificationPolling();
+            // Initialize sidebar resize functionality
+            initSidebarResize();
         });
 
         // Handle Enter key to send
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !document.getElementById('sendBtn').disabled) {
+            const sendBtn = document.getElementById('sendBtn');
+            if (e.key === 'Enter' && sendBtn && !sendBtn.disabled && !e.shiftKey) {
                 sendMessage();
             }
         });

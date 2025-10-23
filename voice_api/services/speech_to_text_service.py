@@ -74,28 +74,78 @@ class SpeechToTextService:
             logger.error(f"Transcription error: {str(e)}")
             return None, f"Transcription failed: {str(e)}"
     
-    def _upload_file(self, file_path: str) -> Optional[str]:
-        """Upload audio file to AssemblyAI"""
-        try:
-            with open(file_path, 'rb') as f:
-                response = requests.post(
-                    f"{self.base_url}/v2/upload",
-                    headers=self.headers,
-                    data=f,
-                    timeout=300  # 5 minutes timeout for large files
-                )
-            
-            if response.status_code == 200:
-                upload_url = response.json().get('upload_url')
-                logger.info(f"File uploaded successfully: {upload_url}")
-                return upload_url
-            else:
-                logger.error(f"Upload failed: {response.status_code} - {response.text}")
-                return None
-                
-        except Exception as e:
-            logger.error(f"Upload error: {str(e)}")
-            return None
+    def _upload_file(self, file_path: str, max_retries: int = 3) -> Optional[str]:
+        """Upload audio file to AssemblyAI with retry logic and chunked transfer"""
+        file_size = os.path.getsize(file_path) / (1024 * 1024)  # MB
+        logger.info(f"File size: {file_size:.2f} MB")
+
+        # Use much longer timeout for slow connections
+        timeout = (300, 300)  # (connect_timeout, read_timeout) in seconds
+        logger.info(f"Using generous timeout for slow connections: {timeout}s")
+
+        for attempt in range(max_retries):
+            try:
+                logger.info(f"Upload attempt {attempt + 1}/{max_retries}")
+
+                # Use streaming upload with chunked encoding
+                with open(file_path, 'rb') as f:
+                    # Create a session for connection reuse
+                    session = requests.Session()
+                    session.headers.update(self.headers)
+
+                    # Use streaming to handle slow uploads better
+                    response = session.post(
+                        f"{self.base_url}/v2/upload",
+                        data=f,
+                        timeout=timeout,
+                        stream=False  # Don't stream response, just upload
+                    )
+
+                    session.close()
+
+                if response.status_code == 200:
+                    upload_url = response.json().get('upload_url')
+                    logger.info(f"File uploaded successfully: {upload_url}")
+                    return upload_url
+                else:
+                    logger.error(f"Upload failed: {response.status_code} - {response.text}")
+                    if attempt < max_retries - 1:
+                        wait_time = (attempt + 1) * 5  # Longer wait between retries
+                        logger.info(f"Retrying in {wait_time} seconds...")
+                        time.sleep(wait_time)
+
+            except requests.Timeout as e:
+                logger.error(f"Upload timeout on attempt {attempt + 1}: {str(e)}")
+                logger.error(f"This usually indicates very slow internet upload speed")
+                if attempt < max_retries - 1:
+                    wait_time = (attempt + 1) * 5
+                    logger.info(f"Retrying in {wait_time} seconds...")
+                    time.sleep(wait_time)
+                else:
+                    logger.error(f"All {max_retries} upload attempts failed due to timeout")
+                    logger.error(f"Please check your internet connection upload speed")
+                    return None
+
+            except requests.ConnectionError as e:
+                logger.error(f"Connection error on attempt {attempt + 1}: {str(e)}")
+                logger.error(f"Cannot reach AssemblyAI servers - check firewall/VPN")
+                if attempt < max_retries - 1:
+                    wait_time = (attempt + 1) * 5
+                    logger.info(f"Retrying in {wait_time} seconds...")
+                    time.sleep(wait_time)
+                else:
+                    return None
+
+            except Exception as e:
+                logger.error(f"Upload error on attempt {attempt + 1}: {str(e)}")
+                if attempt < max_retries - 1:
+                    wait_time = (attempt + 1) * 5
+                    logger.info(f"Retrying in {wait_time} seconds...")
+                    time.sleep(wait_time)
+                else:
+                    return None
+
+        return None
     
     def _request_transcription(self, audio_url: str) -> Optional[str]:
         """

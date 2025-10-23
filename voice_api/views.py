@@ -12,7 +12,7 @@ from django.utils import timezone
 import os
 import logging
 
-from .models import VoiceRequest, PhoneVerification, ChatConversation, ChatMessage
+from .models import VoiceRequest, PhoneVerification, ChatConversation, ChatMessage, ContextQuestion
 from .serializers import (
     VoiceRequestSerializer, VoiceUploadSerializer,
     SendOTPSerializer, VerifyOTPSerializer, PhoneVerificationSerializer,
@@ -23,6 +23,7 @@ from .services.intent_classifier_service import IntentClassifierService
 from .services.entity_extraction_service import EntityExtractionService
 from .services.otp_service import OTPService
 from .services.chat_service import ChatService
+from .services.summary_service import SummaryService
 
 logger = logging.getLogger(__name__)
 
@@ -306,6 +307,7 @@ class VerifyOTPView(APIView):
 
             # Create session
             request.session['phone_number'] = email
+            request.session['user_email'] = email  # Add this for calendar views
             request.session['verified'] = True
             request.session['conversation_id'] = str(conversation.id)
 
@@ -393,12 +395,28 @@ class SendChatMessageView(APIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            # Create user message
+            # Extract entities and classify intent
+            entity_service = EntityExtractionService()
+            intent_service = IntentClassifierService()
+
+            # Get intent
+            intent, confidence, summary, intent_error = intent_service.classify_intent(transcribed_text)
+
+            # Get entities
+            entities_data, entity_error = entity_service.extract_entities(transcribed_text)
+
+            # Create user message with entity data
             user_message = ChatMessage.objects.create(
                 conversation=conversation,
                 message_type='user',
                 audio_file=file_path,
-                transcribed_text=transcribed_text
+                transcribed_text=transcribed_text,
+                intent=intent if not intent_error else None,
+                keywords=entities_data.get('keywords', []) if not entity_error else [],
+                entities=entities_data.get('entities', []) if not entity_error else [],
+                domain_terms=entities_data.get('domain_terms', []) if not entity_error else [],
+                action_items=entities_data.get('action_items', []) if not entity_error else [],
+                topics=entities_data.get('topics', []) if not entity_error else []
             )
 
             # Build conversation history
@@ -432,8 +450,8 @@ class SendChatMessageView(APIView):
 
             # Return both messages
             return Response({
-                'user_message': ChatMessageSerializer(user_message).data,
-                'bot_message': ChatMessageSerializer(bot_message).data
+                'user_message': ChatMessageSerializer(user_message, context={'request': request}).data,
+                'bot_message': ChatMessageSerializer(bot_message, context={'request': request}).data
             }, status=status.HTTP_201_CREATED)
 
         except ChatConversation.DoesNotExist:
@@ -482,7 +500,7 @@ class ChatHistoryView(APIView):
                 conversation=conversation
             ).order_by('created_at')
 
-            serializer = ChatMessageSerializer(messages, many=True)
+            serializer = ChatMessageSerializer(messages, many=True, context={'request': request})
 
             return Response({
                 'conversation_id': str(conversation.id),
@@ -551,7 +569,7 @@ class ConversationDetailView(APIView):
                 conversation=conversation
             ).order_by('created_at')
 
-            message_serializer = ChatMessageSerializer(messages, many=True)
+            message_serializer = ChatMessageSerializer(messages, many=True, context={'request': request})
 
             return Response({
                 'id': str(conversation.id),
@@ -644,7 +662,8 @@ class SendChatMessageModernView(APIView):
         if not serializer.is_valid():
             return Response({'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
-        audio_file = serializer.validated_data['audio_file']
+        audio_file = serializer.validated_data.get('audio_file')
+        attachment_file = serializer.validated_data.get('attachment_file')
         conversation_id = request.data.get('conversation_id')
 
         try:
@@ -661,30 +680,74 @@ class SendChatMessageModernView(APIView):
                     title="New Chat"
                 )
 
-            # Save audio file
-            file_path = self.save_audio_file(audio_file, conversation.id)
+            # Save audio file if provided
+            file_path = None
+            transcribed_text = ""
 
-            # Transcribe audio
-            speech_service = SpeechToTextService()
-            transcribed_text, error = speech_service.transcribe_audio(file_path)
+            if audio_file:
+                file_path = self.save_audio_file(audio_file, conversation.id)
 
-            if error:
-                return Response(
-                    {'error': f'Transcription failed: {error}'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+                # Transcribe audio
+                speech_service = SpeechToTextService()
+                transcribed_text, error = speech_service.transcribe_audio(file_path)
 
-            # Create user message
+                if error:
+                    return Response(
+                        {'error': f'Transcription failed: {error}'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+
+            # Save attachment file if provided
+            attachment_path = None
+            attachment_type = None
+            attachment_name = None
+            attachment_size = None
+
+            if attachment_file:
+                attachment_path, attachment_type = self.save_attachment_file(attachment_file, conversation.id)
+                attachment_name = attachment_file.name
+                attachment_size = attachment_file.size
+
+            # Extract entities and classify intent (only if we have transcribed text)
+            intent = None
+            entities_data = {}
+
+            if transcribed_text:
+                entity_service = EntityExtractionService()
+                intent_service = IntentClassifierService()
+
+                # Get intent
+                intent, confidence, summary, intent_error = intent_service.classify_intent(transcribed_text)
+
+                # Get entities
+                entities_data, entity_error = entity_service.extract_entities(transcribed_text)
+
+            # Create user message with entity data and attachment
             user_message = ChatMessage.objects.create(
                 conversation=conversation,
                 message_type='user',
                 audio_file=file_path,
-                transcribed_text=transcribed_text
+                transcribed_text=transcribed_text,
+                attachment_file=attachment_path,
+                attachment_type=attachment_type,
+                attachment_name=attachment_name,
+                attachment_size=attachment_size,
+                intent=intent if intent else None,
+                keywords=entities_data.get('keywords', []) if entities_data else [],
+                entities=entities_data.get('entities', []) if entities_data else [],
+                domain_terms=entities_data.get('domain_terms', []) if entities_data else [],
+                action_items=entities_data.get('action_items', []) if entities_data else [],
+                topics=entities_data.get('topics', []) if entities_data else []
             )
 
             # Generate conversation title from first message
             if conversation.total_messages == 0:
-                conversation.title = self.generate_title(transcribed_text)
+                if transcribed_text:
+                    conversation.title = self.generate_title(transcribed_text)
+                elif attachment_name:
+                    conversation.title = f"Attachment: {attachment_name[:30]}..."
+                else:
+                    conversation.title = "New Chat"
 
             # Build conversation history
             previous_messages = ChatMessage.objects.filter(
@@ -695,9 +758,22 @@ class SendChatMessageModernView(APIView):
             conversation_history = chat_service.build_conversation_history(previous_messages)
 
             # Generate AI response
+            # If only attachment (no audio), create a contextual prompt about the attachment
+            if not transcribed_text and attachment_file:
+                if attachment_type == 'pdf':
+                    user_input = f"I've uploaded a PDF document: {attachment_name}. Can you help me with it?"
+                elif attachment_type == 'image':
+                    user_input = f"I've uploaded an image: {attachment_name}."
+                elif attachment_type == 'document':
+                    user_input = f"I've uploaded a document: {attachment_name}. Can you help me with it?"
+                else:
+                    user_input = f"I've uploaded a file: {attachment_name}."
+            else:
+                user_input = transcribed_text
+
             response_text, error = chat_service.generate_response(
                 conversation_history,
-                transcribed_text
+                user_input
             )
 
             if error:
@@ -717,8 +793,8 @@ class SendChatMessageModernView(APIView):
 
             # Return both messages
             return Response({
-                'user_message': ChatMessageSerializer(user_message).data,
-                'bot_message': ChatMessageSerializer(bot_message).data,
+                'user_message': ChatMessageSerializer(user_message, context={'request': request}).data,
+                'bot_message': ChatMessageSerializer(bot_message, context={'request': request}).data,
                 'conversation_id': str(conversation.id)
             }, status=status.HTTP_201_CREATED)
 
@@ -747,6 +823,39 @@ class SendChatMessageModernView(APIView):
                 destination.write(chunk)
         return file_path
 
+    def save_attachment_file(self, attachment_file, conversation_id):
+        """Save attachment file (PDF, image, document) to media directory"""
+        import uuid
+
+        # Create attachments directory
+        attachments_dir = os.path.join(settings.MEDIA_ROOT, 'attachments')
+        os.makedirs(attachments_dir, exist_ok=True)
+
+        # Get file extension and determine type
+        file_extension = attachment_file.name.split('.')[-1].lower()
+        filename = f"attachment_{conversation_id}_{uuid.uuid4()}.{file_extension}"
+        file_path = os.path.join(attachments_dir, filename)
+
+        # Determine attachment type
+        image_extensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp']
+        document_extensions = ['doc', 'docx', 'txt', 'xls', 'xlsx', 'ppt', 'pptx']
+
+        if file_extension == 'pdf':
+            attachment_type = 'pdf'
+        elif file_extension in image_extensions:
+            attachment_type = 'image'
+        elif file_extension in document_extensions:
+            attachment_type = 'document'
+        else:
+            attachment_type = 'other'
+
+        # Save file
+        with open(file_path, 'wb+') as destination:
+            for chunk in attachment_file.chunks():
+                destination.write(chunk)
+
+        return file_path, attachment_type
+
     def generate_title(self, text):
         """Generate a short title from the first message"""
         # Take first 50 characters or up to first sentence
@@ -758,3 +867,175 @@ class SendChatMessageModernView(APIView):
                 title = title[:last_space]
             title += "..."
         return title
+
+
+class GenerateSummaryView(APIView):
+    """Generate a summary of a conversation"""
+
+    def post(self, request):
+        try:
+            conversation_id = request.data.get('conversation_id')
+            summary_type = request.data.get('summary_type', 'all')  # 'first' or 'all'
+
+            if not conversation_id:
+                return Response(
+                    {'error': 'conversation_id is required'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Get conversation and messages
+            conversation = ChatConversation.objects.get(id=conversation_id)
+            messages = conversation.messages.all().order_by('created_at')
+
+            if not messages:
+                return Response(
+                    {'error': 'No messages to summarize'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Generate summary
+            summary_service = SummaryService()
+            summary, error = summary_service.generate_conversation_summary(messages, summary_type)
+
+            if error:
+                logger.error(f"Summary generation error: {error}")
+                return Response(
+                    {'error': 'Failed to generate summary'},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+
+            # Update conversation with summary
+            conversation.conversation_summary = summary
+            conversation.summary_generated_at = timezone.now()
+            conversation.save()
+
+            return Response({
+                'summary': summary,
+                'conversation_id': str(conversation.id),
+                'generated_at': conversation.summary_generated_at
+            }, status=status.HTTP_200_OK)
+
+        except ChatConversation.DoesNotExist:
+            return Response(
+                {'error': 'Conversation not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            logger.error(f"Error generating summary: {str(e)}")
+            return Response(
+                {'error': 'An error occurred while generating summary'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class AskContextQuestionView(APIView):
+    """Ask a question about a specific message in context"""
+
+    def post(self, request):
+        try:
+            conversation_id = request.data.get('conversation_id')
+            message_id = request.data.get('message_id')
+            question = request.data.get('question')
+
+            if not all([conversation_id, message_id, question]):
+                return Response(
+                    {'error': 'conversation_id, message_id, and question are required'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Get conversation and messages
+            conversation = ChatConversation.objects.get(id=conversation_id)
+            message = ChatMessage.objects.get(id=message_id, conversation=conversation)
+            conversation_history = conversation.messages.all().order_by('created_at')
+
+            # Generate answer using context
+            summary_service = SummaryService()
+            answer, error = summary_service.answer_context_question(
+                question, message, conversation_history
+            )
+
+            if error:
+                logger.error(f"Context question error: {error}")
+                return Response(
+                    {'error': 'Failed to generate answer'},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                )
+
+            # Store the question and answer
+            context_question = ContextQuestion.objects.create(
+                conversation=conversation,
+                message=message,
+                question=question,
+                answer=answer,
+                context_summary=conversation.conversation_summary
+            )
+
+            return Response({
+                'question': question,
+                'answer': answer,
+                'message_id': str(message_id),
+                'conversation_id': str(conversation_id),
+                'question_id': str(context_question.id)
+            }, status=status.HTTP_201_CREATED)
+
+        except ChatConversation.DoesNotExist:
+            return Response(
+                {'error': 'Conversation not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except ChatMessage.DoesNotExist:
+            return Response(
+                {'error': 'Message not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            logger.error(f"Error answering context question: {str(e)}")
+            return Response(
+                {'error': 'An error occurred while processing your question'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class GetContextQuestionsView(APIView):
+    """Get all context questions for a message or conversation"""
+
+    def get(self, request):
+        try:
+            conversation_id = request.query_params.get('conversation_id')
+            message_id = request.query_params.get('message_id')
+
+            if not conversation_id:
+                return Response(
+                    {'error': 'conversation_id is required'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Filter by conversation
+            questions = ContextQuestion.objects.filter(conversation_id=conversation_id)
+
+            # Optionally filter by specific message
+            if message_id:
+                questions = questions.filter(message_id=message_id)
+
+            questions = questions.order_by('-created_at')
+
+            # Serialize the data
+            questions_data = [{
+                'id': str(q.id),
+                'question': q.question,
+                'answer': q.answer,
+                'message_id': str(q.message.id),
+                'created_at': q.created_at
+            } for q in questions]
+
+            return Response({
+                'questions': questions_data,
+                'count': len(questions_data)
+            }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            logger.error(f"Error retrieving context questions: {str(e)}")
+            return Response(
+                {'error': 'An error occurred while retrieving questions'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
