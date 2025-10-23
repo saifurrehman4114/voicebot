@@ -95,6 +95,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = '/media/'
@@ -136,8 +139,8 @@ BREVO_SENDER_EMAIL = os.environ.get('BREVO_SENDER_EMAIL', '7d9ffd006@smtp-brevo.
 BREVO_SENDER_NAME = os.environ.get('BREVO_SENDER_NAME', 'Voicebot Chat')
 BREVO_SMTP_PASSWORD = os.environ.get('BREVO_SMTP_PASSWORD', '6x8bTRmzjSWJkgwh')
 
-# Base URL for email links - use environment variable or default to Railway production
-BASE_URL = os.environ.get('BASE_URL', 'https://voicebot-production-cdef.up.railway.app')
+# Base URL for email links - use environment variable or default to localhost for development
+BASE_URL = os.environ.get('BASE_URL', 'http://localhost:8000')
 
 LOGGING = {
     'version': 1,

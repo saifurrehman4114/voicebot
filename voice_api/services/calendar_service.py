@@ -20,7 +20,7 @@ class CalendarService:
     def create_appointment(user_email, title, description, start_time, end_time,
                           auto_record=True, reminder_minutes_before=5,
                           location=None, attendees=None,
-                          notes=None, color='#8B5CF6'):
+                          notes=None, color='#8B5CF6', base_url=None):
         """
         Create a new calendar appointment
 
@@ -58,6 +58,7 @@ class CalendarService:
                 attendees=attendees or [],
                 notes=notes,
                 color=color,
+                base_url=base_url,
                 status='scheduled'
             )
 
@@ -260,7 +261,11 @@ class CalendarService:
             from django.conf import settings
             conversation_url = ""
             if conversation:
+                # Get base URL - checks both production and localhost dynamically
                 base_url = getattr(settings, 'BASE_URL', 'http://localhost:8000')
+                # If appointment has a stored base_url from when it was created, use that
+                if hasattr(appointment, 'base_url') and appointment.base_url:
+                    base_url = appointment.base_url
                 conversation_url = f"{base_url}/chat/?conversation={conversation.id}&appointment_id={appointment.id}"
 
             html_content = f"""

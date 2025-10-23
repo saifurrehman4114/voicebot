@@ -87,9 +87,13 @@ class CalendarAppointmentListView(APIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
+            # Detect base URL from request for email links
+            base_url = f"{request.scheme}://{request.get_host()}"
+
             # Create appointment
             appointment = CalendarService.create_appointment(
                 user_email=user_email,
+                base_url=base_url,
                 **serializer.validated_data
             )
 

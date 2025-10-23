@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline - Voicebot AI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .offline-container {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 24px;
+            padding: 60px 40px;
+            max-width: 480px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .icon-wrapper {
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .icon {
+            font-size: 100px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .pulse-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120px;
+            height: 120px;
+            border: 4px solid #667eea;
+            border-radius: 50%;
+            opacity: 0;
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: translate(-50%, -50%) scale(0.8);
+                opacity: 0.8;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        h1 {
+            font-size: 32px;
+            color: #1a1a1a;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+        .status {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .connection-check {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 16px;
+            background: #f5f5f5;
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
+
+        .connection-dot {
+            width: 12px;
+            height: 12px;
+            background: #ef4444;
+            border-radius: 50%;
+            animation: blink 2s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.3;
+            }
+        }
+
+        .connection-text {
+            font-size: 14px;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        button {
+            padding: 16px 32px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: inherit;
+        }
+
+        .retry-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .retry-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .retry-btn:active {
+            transform: translateY(0);
+        }
+
+        .back-btn {
+            background: transparent;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .back-btn:hover {
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .tips {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 1px solid #e5e5e5;
+        }
+
+        .tips-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 12px;
+        }
+
+        .tips-list {
+            list-style: none;
+            text-align: left;
+        }
+
+        .tips-list li {
+            padding: 8px 0;
+            color: #666;
+            font-size: 14px;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .tips-list li::before {
+            content: '•';
+            color: #667eea;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        @media (max-width: 480px) {
+            .offline-container {
+                padding: 40px 24px;
+            }
+
+            h1 {
+                font-size: 26px;
+            }
+
+            .icon {
+                font-size: 80px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="icon-wrapper">
+            <div class="pulse-ring"></div>
+            <div class="icon">📡</div>
+        </div>
+
+        <h1>You're Offline</h1>
+        <p class="status">
+            Unable to connect to the internet. Please check your connection and try again.
+        </p>
+
+        <div class="connection-check">
+            <span class="connection-dot"></span>
+            <span class="connection-text">Checking connection...</span>
+        </div>
+
+        <div class="actions">
+            <button class="retry-btn" onclick="retryConnection()">
+                Retry Connection
+            </button>
+            <button class="back-btn" onclick="goBack()">
+                Go Back
+            </button>
+        </div>
+
+        <div class="tips">
+            <div class="tips-title">Connection Tips:</div>
+            <ul class="tips-list">
+                <li>Check if your device is connected to WiFi or mobile data</li>
+                <li>Try switching between WiFi and mobile data</li>
+                <li>Restart your router if using WiFi</li>
+                <li>Check if airplane mode is turned off</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Auto-check connection status
+        function checkConnection() {
+            const dot = document.querySelector('.connection-dot');
+            const text = document.querySelector('.connection-text');
+
+            if (navigator.onLine) {
+                dot.style.background = '#10b981';
+                dot.style.animation = 'none';
+                text.textContent = 'Connection restored!';
+                text.style.color = '#10b981';
+
+                // Auto-retry after 1 second
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                dot.style.background = '#ef4444';
+                dot.style.animation = 'blink 2s ease-in-out infinite';
+                text.textContent = 'No connection';
+                text.style.color = '#666';
+            }
+        }
+
+        // Check connection periodically
+        setInterval(checkConnection, 3000);
+        checkConnection();
+
+        // Listen for online event
+        window.addEventListener('online', () => {
+            checkConnection();
+        });
+
+        function retryConnection() {
+            checkConnection();
+
+            if (navigator.onLine) {
+                window.location.reload();
+            }
+        }
+
+        function goBack() {
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                window.location.href = '/chat/';
+            }
+        }
+    </script>
+</body>
+</html>

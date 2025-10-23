@@ -4,7 +4,7 @@
       "builder": "NIXPACKS"
     },
     "deploy": {
-      "startCommand": "python manage.py migrate && gunicorn voicebot_project.wsgi",
+      "startCommand": "python manage.py collectstatic --noinput && python manage.py migrate && gunicorn voicebot_project.wsgi --bind 0.0.0.0:$PORT --workers 3 --timeout 120",
       "restartPolicyType": "ON_FAILURE",
       "restartPolicyMaxRetries": 10
     }

@@ -327,6 +327,9 @@ class CalendarAppointment(models.Model):
     conversation_id = models.UUIDField(blank=True, null=True, help_text="Linked chat conversation ID")
     conversation_link_sent = models.BooleanField(default=False, help_text="Whether conversation link email was sent")
 
+    # Base URL for email links (detected from request)
+    base_url = models.CharField(max_length=255, blank=True, null=True, help_text="Base URL for generating email links")
+
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
