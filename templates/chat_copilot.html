@@ -2677,9 +2677,9 @@
                 console.log('Detected appointment from email link:', appointmentId);
 
                 // Fetch appointment details
-                const response = await fetch(`/api/voice/calendar/appointments/${appointmentId}/`);
+                const response = await fetch(`/api/voice/calendar/appointment/${appointmentId}/`);
                 if (!response.ok) {
-                    console.error('Failed to fetch appointment details');
+                    console.error('Failed to fetch appointment details:', response.status);
                     return;
                 }
 

@@ -136,6 +136,9 @@ BREVO_SENDER_EMAIL = os.environ.get('BREVO_SENDER_EMAIL', '7d9ffd006@smtp-brevo.
 BREVO_SENDER_NAME = os.environ.get('BREVO_SENDER_NAME', 'Voicebot Chat')
 BREVO_SMTP_PASSWORD = os.environ.get('BREVO_SMTP_PASSWORD', '6x8bTRmzjSWJkgwh')
 
+# Base URL for email links - use environment variable or default to Railway production
+BASE_URL = os.environ.get('BASE_URL', 'https://voicebot-production-cdef.up.railway.app')
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
