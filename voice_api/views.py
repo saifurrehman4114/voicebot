@@ -665,6 +665,7 @@ class SendChatMessageModernView(APIView):
         audio_file = serializer.validated_data.get('audio_file')
         attachment_file = serializer.validated_data.get('attachment_file')
         conversation_id = request.data.get('conversation_id')
+        context_message_id = request.data.get('context_message_id')  # NEW: For context-aware file uploads
 
         try:
             # Get or create conversation
@@ -758,18 +759,47 @@ class SendChatMessageModernView(APIView):
             conversation_history = chat_service.build_conversation_history(previous_messages)
 
             # Generate AI response
+            # NEW: If context_message_id is provided, include that specific message for context-aware response
+            context_message_text = None
+            if context_message_id:
+                try:
+                    context_message = ChatMessage.objects.get(id=context_message_id, conversation=conversation)
+                    if context_message.message_type == 'user':
+                        context_message_text = context_message.transcribed_text or "Previous user message"
+                    else:
+                        context_message_text = context_message.response_text or "Previous bot response"
+                except ChatMessage.DoesNotExist:
+                    logger.warning(f"Context message {context_message_id} not found")
+
             # If only attachment (no audio), create a contextual prompt about the attachment
             if not transcribed_text and attachment_file:
-                if attachment_type == 'pdf':
-                    user_input = f"I've uploaded a PDF document: {attachment_name}. Can you help me with it?"
-                elif attachment_type == 'image':
-                    user_input = f"I've uploaded an image: {attachment_name}."
-                elif attachment_type == 'document':
-                    user_input = f"I've uploaded a document: {attachment_name}. Can you help me with it?"
+                if context_message_text:
+                    # Enhanced context-aware response when file is uploaded in context of a specific message
+                    if attachment_type == 'pdf':
+                        user_input = f"Regarding the message: '{context_message_text}' - I've uploaded a PDF document: {attachment_name}. Please analyze this file in the context of our previous conversation and this specific message, and provide relevant insights."
+                    elif attachment_type == 'image':
+                        user_input = f"Regarding the message: '{context_message_text}' - I've uploaded an image: {attachment_name}. How does this relate to what we were discussing?"
+                    elif attachment_type == 'document':
+                        user_input = f"Regarding the message: '{context_message_text}' - I've uploaded a document: {attachment_name}. Please review this in the context of our previous conversation."
+                    else:
+                        user_input = f"Regarding the message: '{context_message_text}' - I've uploaded a file: {attachment_name}. Please help me understand how this relates to our discussion."
                 else:
-                    user_input = f"I've uploaded a file: {attachment_name}."
+                    # Original behavior when no context message
+                    if attachment_type == 'pdf':
+                        user_input = f"I've uploaded a PDF document: {attachment_name}. Can you help me with it?"
+                    elif attachment_type == 'image':
+                        user_input = f"I've uploaded an image: {attachment_name}."
+                    elif attachment_type == 'document':
+                        user_input = f"I've uploaded a document: {attachment_name}. Can you help me with it?"
+                    else:
+                        user_input = f"I've uploaded a file: {attachment_name}."
             else:
-                user_input = transcribed_text
+                # If audio/text is provided
+                if context_message_text and (audio_file or transcribed_text):
+                    # Enhance with context
+                    user_input = f"Regarding the message: '{context_message_text}' - {transcribed_text}"
+                else:
+                    user_input = transcribed_text
 
             response_text, error = chat_service.generate_response(
                 conversation_history,

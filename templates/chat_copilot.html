@@ -2,17 +2,28 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
     <title>Voicebot AI - Your AI Companion</title>
 
     <!-- PWA Meta Tags -->
     <meta name="description" content="AI-powered voice assistant with intelligent conversation management, appointment scheduling, and context-aware responses">
-    <meta name="theme-color" content="#667eea">
+    <meta name="theme-color" content="#667eea" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#667eea" media="(prefers-color-scheme: dark)">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Voicebot AI">
     <meta name="application-name" content="Voicebot AI">
+
+    <!-- Samsung/Android specific -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#667eea">
+    <meta name="msapplication-navbutton-color" content="#667eea">
+    <meta name="msapplication-TileColor" content="#667eea">
+    <meta name="msapplication-starturl" content="/chat/">
+
+    <!-- Prevent auto-zoom on input focus (iOS Safari) -->
+    <meta name="format-detection" content="telephone=no">
 
     <!-- Icons -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
@@ -823,31 +834,65 @@
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%) translateY(200px);
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(102, 126, 234, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.5) inset;
             z-index: 2000;
-            max-width: 480px;
+            max-width: 420px;
             width: calc(100% - 40px);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
             opacity: 0;
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+        }
+
+        .pwa-install-banner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
         }
 
         .pwa-install-banner.show {
             transform: translateX(-50%) translateY(0);
             opacity: 1;
+            animation: bounceIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes bounceIn {
+            0% { transform: translateX(-50%) translateY(200px) scale(0.9); opacity: 0; }
+            60% { transform: translateX(-50%) translateY(-10px) scale(1.02); }
+            100% { transform: translateX(-50%) translateY(0) scale(1); opacity: 1; }
         }
 
         .pwa-install-content {
             display: flex;
             align-items: center;
             gap: 16px;
-            padding: 20px;
+            padding: 24px;
+            position: relative;
         }
 
         .pwa-install-icon {
-            font-size: 36px;
+            font-size: 48px;
             flex-shrink: 0;
+            filter: drop-shadow(0 4px 8px rgba(102, 126, 234, 0.3));
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
         }
 
         .pwa-install-text {
@@ -855,59 +900,123 @@
         }
 
         .pwa-install-title {
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 700;
-            color: #1a1a1a;
-            margin-bottom: 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 6px;
+            letter-spacing: -0.3px;
         }
 
         .pwa-install-subtitle {
-            font-size: 13px;
+            font-size: 14px;
             color: #666;
+            line-height: 1.4;
         }
 
         .pwa-install-actions {
             display: flex;
-            gap: 8px;
+            gap: 10px;
             align-items: center;
         }
 
         .pwa-install-btn {
-            padding: 10px 20px;
+            padding: 12px 24px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            border-radius: 10px;
-            font-size: 14px;
+            border-radius: 12px;
+            font-size: 15px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pwa-install-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .pwa-install-btn:hover::before {
+            left: 100%;
         }
 
         .pwa-install-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+        }
+
+        .pwa-install-btn:active {
+            transform: translateY(-1px) scale(0.98);
         }
 
         .pwa-dismiss-btn {
-            width: 32px;
-            height: 32px;
-            background: transparent;
-            border: none;
-            border-radius: 8px;
-            font-size: 18px;
-            color: #999;
+            width: 36px;
+            height: 36px;
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            border-radius: 10px;
+            font-size: 16px;
+            color: #667eea;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-weight: 600;
         }
 
         .pwa-dismiss-btn:hover {
-            background: #f5f5f5;
-            color: #666;
+            background: rgba(102, 126, 234, 0.15);
+            border-color: rgba(102, 126, 234, 0.3);
+            transform: rotate(90deg);
+            color: #764ba2;
+        }
+
+        /* Mobile responsive improvements */
+        @media (max-width: 480px) {
+            .pwa-install-banner {
+                bottom: 10px;
+                width: calc(100% - 20px);
+                max-width: none;
+            }
+
+            .pwa-install-content {
+                padding: 18px;
+                gap: 12px;
+            }
+
+            .pwa-install-icon {
+                font-size: 40px;
+            }
+
+            .pwa-install-title {
+                font-size: 16px;
+            }
+
+            .pwa-install-subtitle {
+                font-size: 13px;
+            }
+
+            .pwa-install-btn {
+                padding: 10px 18px;
+                font-size: 14px;
+            }
+
+            .pwa-install-actions {
+                gap: 8px;
+            }
         }
 
         /* Update notification */
@@ -1463,6 +1572,14 @@
             background: var(--bg-glass);
             border-radius: 10px;
             border: 1px solid var(--border-color);
+        }
+
+        .context-timestamp {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 6px;
+            padding-left: 12px;
+            font-style: italic;
         }
 
         .no-questions-message {
@@ -4719,14 +4836,19 @@
                     const fileName = (contextAudioFile && contextAudioFile.name) || (contextAttachmentFile && contextAttachmentFile.name) || 'Unknown file';
                     const fileIcon = contextAudioFile ? '🎤' : getFileIcon(fileName);
 
+                    // Extract the bot response from the API response
+                    const botResponse = data.bot_message?.response_text || data.response || 'File uploaded and analyzed.';
+                    const userText = data.user_message?.transcribed_text || `Uploaded: ${fileName}`;
+
                     // Create a question-answer item for the file upload
                     const fileResponseHtml = `
                         <div class="context-question-item">
                             <div class="context-question">
                                 <span>${fileIcon}</span>
-                                <span>Uploaded: ${fileName}</span>
+                                <span>${userText}</span>
                             </div>
-                            <div class="context-answer">${data.response || data.transcription || 'File uploaded and analyzed.'}</div>
+                            <div class="context-answer">${botResponse}</div>
+                            <div class="context-timestamp">${new Date().toLocaleTimeString()}</div>
                         </div>
                     `;
 
@@ -4746,7 +4868,8 @@
                     document.getElementById('contextFileDisplay').innerHTML = '';
                     document.getElementById('contextUploadSendBtn').style.display = 'none';
 
-                    // DO NOT reload conversation - keep response in sidebar only
+                    // Scroll to the bottom of context questions
+                    container.scrollTop = container.scrollHeight;
 
                 } else {
                     showNotification('Failed to upload file: ' + (data.error || 'Unknown error'), 'error');
