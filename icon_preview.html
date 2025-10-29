@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CHABOT AI - Healthcare Green Icon Preview</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #10b981 0%, #059669 50%, #064e3b 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 24px;
+            padding: 60px;
+            max-width: 900px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 36px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 50px;
+            font-size: 18px;
+        }
+
+        .icon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .icon-item {
+            text-align: center;
+        }
+
+        .icon-wrapper {
+            background: #f0fdf4;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 200px;
+            border: 2px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .icon-wrapper img {
+            max-width: 100%;
+            height: auto;
+            filter: drop-shadow(0 4px 12px rgba(16, 185, 129, 0.2));
+        }
+
+        .icon-label {
+            font-size: 14px;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .features {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%);
+            border-radius: 16px;
+            padding: 30px;
+            margin-top: 40px;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .features h2 {
+            font-size: 24px;
+            color: #1a1a1a;
+            margin-bottom: 20px;
+        }
+
+        .features ul {
+            list-style: none;
+        }
+
+        .features li {
+            padding: 12px 0;
+            color: #666;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .features li::before {
+            content: '✓';
+            color: #10b981;
+            font-weight: bold;
+            font-size: 20px;
+            width: 24px;
+            height: 24px;
+            background: rgba(16, 185, 129, 0.15);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .color-palette {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-top: 30px;
+            border: 1px solid #e5e5e5;
+        }
+
+        .color-palette h3 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #1a1a1a;
+        }
+
+        .color-swatches {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+        }
+
+        .color-swatch {
+            text-align: center;
+        }
+
+        .color-box {
+            width: 100%;
+            height: 80px;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .color-name {
+            font-size: 12px;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .color-code {
+            font-size: 11px;
+            color: #999;
+            font-family: monospace;
+        }
+
+        .download-section {
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        .download-btn {
+            display: inline-block;
+            padding: 16px 32px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 20px;
+            }
+
+            h1 {
+                font-size: 28px;
+            }
+
+            .icon-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏥 CHABOT AI Healthcare Icon</h1>
+        <p class="subtitle">Professional Healthcare Green Theme Design</p>
+
+        <div class="icon-grid">
+            <div class="icon-item">
+                <div class="icon-wrapper">
+                    <img src="static/icons/icon-512x512.svg" alt="CHABOT AI Icon 512x512" width="180">
+                </div>
+                <div class="icon-label">512 × 512 px</div>
+            </div>
+
+            <div class="icon-item">
+                <div class="icon-wrapper">
+                    <img src="static/icons/icon-192x192.svg" alt="CHABOT AI Icon 192x192" width="120">
+                </div>
+                <div class="icon-label">192 × 192 px</div>
+            </div>
+
+            <div class="icon-item">
+                <div class="icon-wrapper">
+                    <img src="static/icons/icon-128x128.svg" alt="CHABOT AI Icon 128x128" width="96">
+                </div>
+                <div class="icon-label">128 × 128 px</div>
+            </div>
+
+            <div class="icon-item">
+                <div class="icon-wrapper">
+                    <img src="static/icons/icon-72x72.svg" alt="CHABOT AI Icon 72x72" width="72">
+                </div>
+                <div class="icon-label">72 × 72 px</div>
+            </div>
+        </div>
+
+        <div class="features">
+            <h2>✨ Icon Design Features</h2>
+            <ul>
+                <li><strong>Medical Cross:</strong> Green gradient medical cross (#10b981 → #059669 → #064e3b)</li>
+                <li><strong>Heart Icon:</strong> Light green heart (#34d399) representing healthcare and vitality</li>
+                <li><strong>Stethoscope:</strong> Dark teal medical tool icon for professional healthcare look</li>
+                <li><strong>Medical Shield:</strong> Security badge with checkmark for trust and safety</li>
+                <li><strong>Health Pulse:</strong> Light green heartbeat monitor line</li>
+                <li><strong>Green Gradient:</strong> Modern light-to-dark green (#10b981 → #059669 → #064e3b)</li>
+                <li><strong>Professional Look:</strong> Clean white circle with shadows and depth</li>
+                <li><strong>Cross-Platform:</strong> Perfect on iOS, Android, Samsung, and OnePlus</li>
+            </ul>
+        </div>
+
+        <div class="color-palette">
+            <h3>🎨 Color Palette</h3>
+            <div class="color-swatches">
+                <div class="color-swatch">
+                    <div class="color-box" style="background: #10b981;"></div>
+                    <div class="color-name">Emerald</div>
+                    <div class="color-code">#10b981</div>
+                </div>
+                <div class="color-swatch">
+                    <div class="color-box" style="background: #059669;"></div>
+                    <div class="color-name">Green</div>
+                    <div class="color-code">#059669</div>
+                </div>
+                <div class="color-swatch">
+                    <div class="color-box" style="background: #064e3b;"></div>
+                    <div class="color-name">Dark Teal</div>
+                    <div class="color-code">#064e3b</div>
+                </div>
+                <div class="color-swatch">
+                    <div class="color-box" style="background: #34d399;"></div>
+                    <div class="color-name">Light Green</div>
+                    <div class="color-code">#34d399</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="download-section">
+            <p style="color: #666; margin-bottom: 20px;">Your healthcare green-themed icon is ready!</p>
+            <a href="static/icons/icon-512x512.svg" download="chabot-ai-icon-green.svg" class="download-btn">
+                📥 Download Icon (SVG)
+            </a>
+        </div>
+    </div>
+</body>
+</html>

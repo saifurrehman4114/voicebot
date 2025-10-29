@@ -4,8 +4,8 @@
   "description": "AI-powered voice assistant with intelligent conversation management, appointment scheduling, and context-aware responses",
   "start_url": "/chat/",
   "display": "standalone",
-  "background_color": "#8b9eff",
-  "theme_color": "#8b9eff",
+  "background_color": "#10b981",
+  "theme_color": "#10b981",
   "orientation": "portrait-primary",
   "scope": "/",
   "icons": [

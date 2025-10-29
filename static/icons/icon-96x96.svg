@@ -1,26 +1,97 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="96" height="96">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
+    <!-- Light Green to Dark Teal Gradient - Modern Healthcare -->
     <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
-      <stop offset="50%" style="stop-color:#764ba2;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#f093fb;stop-opacity:1" />
+      <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#059669;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#064e3b;stop-opacity:1" />
     </linearGradient>
+
+    <!-- Dark overlay for depth -->
+    <linearGradient id="darkOverlay" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#000000;stop-opacity:0" />
+      <stop offset="100%" style="stop-color:#000000;stop-opacity:0.15" />
+    </linearGradient>
+
+    <!-- Light shine effect -->
+    <linearGradient id="whiteGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.25" />
+      <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0" />
+    </linearGradient>
+
+    <!-- Shadow filter -->
     <filter id="shadow">
-      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-opacity="0.3"/>
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-opacity="0.3"/>
+    </filter>
+
+    <!-- Inner shadow for depth -->
+    <filter id="innerShadow">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+      <feOffset dx="0" dy="2" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.5"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
     </filter>
   </defs>
 
-  <!-- Background -->
-  <rect width="96" height="96" fill="url(#grad)" rx="14"/>
+  <!-- Background with rounded corners - Green gradient -->
+  <rect width="512" height="512" fill="url(#grad)" rx="112"/>
 
-  <!-- Robot emoji as text -->
-  <text
-    x="50%"
-    y="50%"
-    font-size="57"
-    text-anchor="middle"
-    dominant-baseline="central"
-    filter="url(#shadow)"
-  >🤖</text>
+  <!-- Dark overlay for depth -->
+  <rect width="512" height="512" fill="url(#darkOverlay)" rx="112"/>
+
+  <!-- Subtle shine effect -->
+  <rect width="512" height="256" fill="url(#whiteGrad)" rx="112"/>
+
+  <!-- Healthcare Icon Container - White Circle with shadow -->
+  <circle cx="256" cy="256" r="165" fill="white" filter="url(#shadow)" opacity="0.97"/>
+
+  <!-- Medical Cross - Main Symbol with green gradient -->
+  <g filter="url(#innerShadow)">
+    <!-- Vertical bar of cross -->
+    <rect x="226" y="166" width="60" height="180" rx="12" fill="url(#grad)"/>
+
+    <!-- Horizontal bar of cross -->
+    <rect x="166" y="226" width="180" height="60" rx="12" fill="url(#grad)"/>
+  </g>
+
+  <!-- Healthcare Heart Icon - Bottom Right (light green) -->
+  <g transform="translate(305, 305)" filter="url(#shadow)">
+    <path d="M 0,-8 C -15,-20 -30,-15 -30,0 C -30,15 0,30 0,30 C 0,30 30,15 30,0 C 30,-15 15,-20 0,-8 Z"
+          fill="#34d399"
+          opacity="0.95"/>
+  </g>
+
+  <!-- Stethoscope Icon - Top Left (symbolizing medical care) -->
+  <g transform="translate(175, 175)" filter="url(#shadow)">
+    <circle cx="18" cy="18" r="18" fill="#064e3b" opacity="0.9"/>
+    <circle cx="18" cy="18" r="12" fill="none" stroke="white" stroke-width="3"/>
+    <path d="M 18,6 L 18,30" stroke="white" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="18" cy="6" r="3" fill="white"/>
+  </g>
+
+  <!-- Pulse Line - Healthcare Theme (light green) -->
+  <g opacity="0.5" stroke="#10b981" stroke-width="4" fill="none">
+    <path d="M 100,400 L 140,400 L 160,370 L 180,430 L 200,400 L 412,400"
+          stroke-linecap="round"
+          stroke-linejoin="round"/>
+  </g>
+
+  <!-- Medical Shield - Bottom Left for security/trust -->
+  <g transform="translate(170, 310)" filter="url(#shadow)">
+    <path d="M 15,0 L 30,8 L 30,20 C 30,28 15,35 15,35 C 15,35 0,28 0,20 L 0,8 Z"
+          fill="#10b981"
+          opacity="0.85"/>
+    <path d="M 10,15 L 13,19 L 20,10"
+          stroke="white"
+          stroke-width="2.5"
+          fill="none"
+          stroke-linecap="round"
+          stroke-linejoin="round"/>
+  </g>
 </svg>
