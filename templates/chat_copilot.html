@@ -26,10 +26,10 @@
     <meta name="format-detection" content="telephone=no">
 
     <!-- Icons -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+    <link rel="icon" type="image/svg+xml" sizes="32x32" href="/static/icons/icon-192x192.svg?v=2">
+    <link rel="icon" type="image/svg+xml" sizes="any" href="/static/icons/icon-512x512.svg?v=2">
     <link rel="manifest" href="/static/manifest.json">
     <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.svg">
-    <link rel="icon" type="image/svg+xml" sizes="any" href="/static/icons/icon-512x512.svg">
 
     <!-- Preload critical resources -->
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
@@ -2754,7 +2754,9 @@
                     <span id="sidebarToggleIcon">◀</span>
                 </button>
                 <div class="logo">
-                    <div class="logo-icon">🤖</div>
+                    <div class="logo-icon">
+                        <img src="/static/icons/icon-192x192.svg" alt="CHABOT AI" style="width: 32px; height: 32px; border-radius: 8px;">
+                    </div>
                     <span class="logo-text">CHABOT AI</span>
                 </div>
                 <button class="new-chat-btn" onclick="createNewChat()">
@@ -2840,7 +2842,7 @@
                     <div class="welcome-screen">
                         <div class="welcome-icon-wrapper">
                             <div class="welcome-glow"></div>
-                            <div class="welcome-icon">🤖</div>
+                            <div class="welcome-icon"><img src="/static/icons/icon-192x192.svg" alt="Bot" style="width: 32px; height: 32px; border-radius: 50%;"></div>
                         </div>
                         <h2 class="welcome-title">Hello! How can I help you today?</h2>
                         <p class="welcome-subtitle">
@@ -2956,6 +2958,9 @@
                 <div class="context-upload-header">
                     <span>📤</span>
                     <span>Respond with File/Audio</span>
+                </div>
+                <div style="padding: 8px 12px; background: #e8f5e9; border-radius: 8px; margin: 8px 0; font-size: 12px; color: #2e7d32;">
+                    ℹ️ <strong>Use these buttons</strong> to respond to the selected message. Response will appear below, not in main chat.
                 </div>
 
                 <!-- Recording Banner for Sidebar -->
@@ -3940,7 +3945,7 @@
 
             return `
                 <div class="message-wrapper bot" data-message-id="${messageId}">
-                    <div class="message-avatar">🤖</div>
+                    <div class="message-avatar"><img src="/static/icons/icon-192x192.svg" alt="Bot" style="width: 32px; height: 32px; border-radius: 50%;"></div>
                     <div class="message-content">
                         <div class="message-actions">
                             <button class="context-btn" onclick="openContextSidebar('${messageId}')" title="Ask about this message">
@@ -4228,7 +4233,7 @@
                 hideTypingIndicator();
 
                 if (response.ok) {
-                    // Add user message
+                    // Add user message ONLY (no bot message)
                     // If there's no transcribed text but there's an attachment, show attachment name
                     let displayText = data.user_message.transcribed_text;
                     if (!displayText && data.user_message.attachment_name) {
@@ -4244,18 +4249,37 @@
                         data.user_message
                     );
 
-                    // Add bot response
-                    addBotMessage(
-                        data.bot_message.response_text,
-                        data.bot_message.created_at,
-                        data.bot_message.id
-                    );
-
-                    // Update current messages
+                    // Update current messages (only user message, no bot message)
                     currentMessages.push(data.user_message);
-                    currentMessages.push(data.bot_message);
 
                     scrollToBottom();
+
+                    // NEW: Automatically open context sidebar to show bot response
+                    const userMessageId = data.user_message.id;
+                    setTimeout(() => {
+                        openContextSidebar(userMessageId);
+
+                        // Display the bot response in context sidebar
+                        const container = document.getElementById('contextQuestionsContainer');
+                        const contextQuestion = data.context_question;
+                        const timestamp = new Date(contextQuestion.created_at).toLocaleTimeString('en-US', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+
+                        const questionHtml = `
+                            <div class="context-question-item">
+                                <div class="context-question">${contextQuestion.question}</div>
+                                <div class="context-answer">${contextQuestion.answer}</div>
+                                <div class="context-timestamp">${timestamp}</div>
+                            </div>
+                        `;
+
+                        container.innerHTML = questionHtml;
+                        container.scrollTop = container.scrollHeight;
+
+                        showNotification('Response ready! Check the context sidebar →', 'success');
+                    }, 500);
 
                     // Reload conversations to update titles and times
                     await loadConversations();
@@ -4362,7 +4386,7 @@
             }
 
             messageDiv.innerHTML = `
-                <div class="message-avatar">🤖</div>
+                <div class="message-avatar"><img src="/static/icons/icon-192x192.svg" alt="Bot" style="width: 32px; height: 32px; border-radius: 50%;"></div>
                 <div class="message-content">
                     <div class="message-actions">
                         <button class="context-btn" onclick="openContextSidebar('${messageId}')" title="Ask about this message">
@@ -4410,7 +4434,7 @@
             }
 
             indicator.innerHTML = `
-                <div class="message-avatar">🤖</div>
+                <div class="message-avatar"><img src="/static/icons/icon-192x192.svg" alt="Bot" style="width: 32px; height: 32px; border-radius: 50%;"></div>
                 ${content}
             `;
             messagesWrapper.appendChild(indicator);
@@ -4432,7 +4456,7 @@
                 <div class="welcome-screen">
                     <div class="welcome-icon-wrapper">
                         <div class="welcome-glow"></div>
-                        <div class="welcome-icon">🤖</div>
+                        <div class="welcome-icon"><img src="/static/icons/icon-192x192.svg" alt="Bot" style="width: 32px; height: 32px; border-radius: 50%;"></div>
                     </div>
                     <h2 class="welcome-title">Hello! How can I help you today?</h2>
                     <p class="welcome-subtitle">
@@ -4648,12 +4672,23 @@
                 const data = await response.json();
 
                 if (response.ok && data.questions && data.questions.length > 0) {
-                    container.innerHTML = data.questions.map(q => `
-                        <div class="context-question-item">
-                            <div class="context-question">${q.question}</div>
-                            <div class="context-answer">${q.answer}</div>
-                        </div>
-                    `).join('');
+                    // Reverse to show oldest first, newest last
+                    const sortedQuestions = [...data.questions].reverse();
+
+                    container.innerHTML = sortedQuestions.map(q => {
+                        const timestamp = new Date(q.created_at).toLocaleTimeString('en-US', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+
+                        return `
+                            <div class="context-question-item">
+                                <div class="context-question">${q.question}</div>
+                                <div class="context-answer">${q.answer}</div>
+                                <div class="context-timestamp">${timestamp}</div>
+                            </div>
+                        `;
+                    }).join('');
                 } else {
                     container.innerHTML = `
                         <div class="no-questions-message">
@@ -4837,6 +4872,14 @@
             formData.append('conversation_id', currentConversationId);
             formData.append('context_message_id', selectedMessageId);
 
+            // Debug log to verify we're sending context_message_id
+            console.log('Sending context upload with:', {
+                conversation_id: currentConversationId,
+                context_message_id: selectedMessageId,
+                has_audio: !!contextAudioFile,
+                has_attachment: !!contextAttachmentFile
+            });
+
             // Get CSRF token
             const csrfToken = getCookie('csrftoken');
 
@@ -4852,37 +4895,35 @@
                 });
 
                 const data = await response.json();
+                console.log('Context upload response:', data);
 
                 if (response.ok) {
-                    showNotification('File uploaded successfully!', 'success');
+                    showNotification('Response generated!', 'success');
 
-                    // Add the file response to context questions display (in Message Context sidebar)
+                    // Backend returns context_question data (NOT conversation messages)
+                    const contextQuestion = data.context_question;
+
+                    // Add the new question/answer to the context display
                     const container = document.getElementById('contextQuestionsContainer');
-                    const fileName = (contextAudioFile && contextAudioFile.name) || (contextAttachmentFile && contextAttachmentFile.name) || 'Unknown file';
-                    const fileIcon = contextAudioFile ? '🎤' : getFileIcon(fileName);
+                    const timestamp = new Date(contextQuestion.created_at).toLocaleTimeString('en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
 
-                    // Extract the bot response from the API response
-                    const botResponse = data.bot_message?.response_text || data.response || 'File uploaded and analyzed.';
-                    const userText = data.user_message?.transcribed_text || `Uploaded: ${fileName}`;
-
-                    // Create a question-answer item for the file upload
-                    const fileResponseHtml = `
+                    const questionHtml = `
                         <div class="context-question-item">
-                            <div class="context-question">
-                                <span>${fileIcon}</span>
-                                <span>${userText}</span>
-                            </div>
-                            <div class="context-answer">${botResponse}</div>
-                            <div class="context-timestamp">${new Date().toLocaleTimeString()}</div>
+                            <div class="context-question">${contextQuestion.question}</div>
+                            <div class="context-answer">${contextQuestion.answer}</div>
+                            <div class="context-timestamp">${timestamp}</div>
                         </div>
                     `;
 
                     // If container has "no questions" message, replace it
                     if (container.querySelector('.no-questions-message')) {
-                        container.innerHTML = fileResponseHtml;
+                        container.innerHTML = questionHtml;
                     } else {
                         // Append to existing questions
-                        container.insertAdjacentHTML('beforeend', fileResponseHtml);
+                        container.insertAdjacentHTML('beforeend', questionHtml);
                     }
 
                     // Clear files

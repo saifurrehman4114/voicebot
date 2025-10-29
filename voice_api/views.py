@@ -665,7 +665,10 @@ class SendChatMessageModernView(APIView):
         audio_file = serializer.validated_data.get('audio_file')
         attachment_file = serializer.validated_data.get('attachment_file')
         conversation_id = request.data.get('conversation_id')
-        context_message_id = request.data.get('context_message_id')  # NEW: For context-aware file uploads
+        context_message_id = request.data.get('context_message_id')  # For context-aware file uploads
+
+        # Debug logging
+        logger.info(f"SendChatMessageModernView received: conversation_id={conversation_id}, context_message_id={context_message_id}, has_audio={bool(audio_file)}, has_attachment={bool(attachment_file)}")
 
         try:
             # Get or create conversation
@@ -680,6 +683,22 @@ class SendChatMessageModernView(APIView):
                     phone_number=phone_number,
                     title="New Chat"
                 )
+
+            # ============================================================
+            # SEPARATE FLOW: Context Sidebar Upload (NO conversation messages)
+            # ============================================================
+            if context_message_id:
+                logger.info(f"🔀 ROUTING TO CONTEXT HANDLER - context_message_id={context_message_id}")
+                return self.handle_context_question_upload(
+                    conversation, context_message_id, audio_file, attachment_file
+                )
+
+            # If we reach here, context_message_id was None/empty
+            logger.info(f"📝 ROUTING TO NORMAL FLOW - Creating conversation messages")
+
+            # ============================================================
+            # NORMAL FLOW: Main conversation thread (creates messages)
+            # ============================================================
 
             # Save audio file if provided
             file_path = None
@@ -758,48 +777,19 @@ class SendChatMessageModernView(APIView):
             chat_service = ChatService()
             conversation_history = chat_service.build_conversation_history(previous_messages)
 
-            # Generate AI response
-            # NEW: If context_message_id is provided, include that specific message for context-aware response
-            context_message_text = None
-            if context_message_id:
-                try:
-                    context_message = ChatMessage.objects.get(id=context_message_id, conversation=conversation)
-                    if context_message.message_type == 'user':
-                        context_message_text = context_message.transcribed_text or "Previous user message"
-                    else:
-                        context_message_text = context_message.response_text or "Previous bot response"
-                except ChatMessage.DoesNotExist:
-                    logger.warning(f"Context message {context_message_id} not found")
-
+            # Generate AI response (for main conversation thread)
             # If only attachment (no audio), create a contextual prompt about the attachment
             if not transcribed_text and attachment_file:
-                if context_message_text:
-                    # Enhanced context-aware response when file is uploaded in context of a specific message
-                    if attachment_type == 'pdf':
-                        user_input = f"Regarding the message: '{context_message_text}' - I've uploaded a PDF document: {attachment_name}. Please analyze this file in the context of our previous conversation and this specific message, and provide relevant insights."
-                    elif attachment_type == 'image':
-                        user_input = f"Regarding the message: '{context_message_text}' - I've uploaded an image: {attachment_name}. How does this relate to what we were discussing?"
-                    elif attachment_type == 'document':
-                        user_input = f"Regarding the message: '{context_message_text}' - I've uploaded a document: {attachment_name}. Please review this in the context of our previous conversation."
-                    else:
-                        user_input = f"Regarding the message: '{context_message_text}' - I've uploaded a file: {attachment_name}. Please help me understand how this relates to our discussion."
+                if attachment_type == 'pdf':
+                    user_input = f"I've uploaded a PDF document: {attachment_name}. Can you help me with it?"
+                elif attachment_type == 'image':
+                    user_input = f"I've uploaded an image: {attachment_name}."
+                elif attachment_type == 'document':
+                    user_input = f"I've uploaded a document: {attachment_name}. Can you help me with it?"
                 else:
-                    # Original behavior when no context message
-                    if attachment_type == 'pdf':
-                        user_input = f"I've uploaded a PDF document: {attachment_name}. Can you help me with it?"
-                    elif attachment_type == 'image':
-                        user_input = f"I've uploaded an image: {attachment_name}."
-                    elif attachment_type == 'document':
-                        user_input = f"I've uploaded a document: {attachment_name}. Can you help me with it?"
-                    else:
-                        user_input = f"I've uploaded a file: {attachment_name}."
+                    user_input = f"I've uploaded a file: {attachment_name}."
             else:
-                # If audio/text is provided
-                if context_message_text and (audio_file or transcribed_text):
-                    # Enhance with context
-                    user_input = f"Regarding the message: '{context_message_text}' - {transcribed_text}"
-                else:
-                    user_input = transcribed_text
+                user_input = transcribed_text
 
             response_text, error = chat_service.generate_response(
                 conversation_history,
@@ -810,21 +800,50 @@ class SendChatMessageModernView(APIView):
                 logger.error(f"Chat response error: {error}")
                 response_text = "I'm sorry, I'm having trouble responding right now. Please try again."
 
-            # Create bot message
-            bot_message = ChatMessage.objects.create(
+            # NEW BEHAVIOR: Don't create bot message in main chat
+            # Instead, create a ContextQuestion so response appears in context sidebar
+            logger.info(f"📝 Creating ContextQuestion for user message (NO bot message in main chat)")
+
+            # Create question text based on input type
+            if audio_file:
+                question_text = f"🎤 {transcribed_text or 'Voice message'}"
+            elif attachment_file:
+                file_icon = '📎'
+                if attachment_type == 'pdf':
+                    file_icon = '📄'
+                elif attachment_type == 'image':
+                    file_icon = '🖼️'
+                elif attachment_type == 'document':
+                    file_icon = '📝'
+                question_text = f"{file_icon} {transcribed_text or f'Uploaded: {attachment_name}'}"
+            else:
+                question_text = transcribed_text
+
+            # Create ContextQuestion (not bot message)
+            context_question = ContextQuestion.objects.create(
                 conversation=conversation,
-                message_type='bot',
-                response_text=response_text
+                message=user_message,  # Link to the user's message
+                question=question_text,
+                answer=response_text,
+                context_summary=conversation.conversation_summary
             )
 
-            # Update conversation metadata
-            conversation.total_messages += 2
+            # Update conversation metadata (only 1 message added - the user message)
+            conversation.total_messages += 1
             conversation.save()
 
-            # Return both messages
+            logger.info(f"✅ Response stored as ContextQuestion (not in main chat)")
+
+            # Return user message and context question (NO bot_message)
             return Response({
                 'user_message': ChatMessageSerializer(user_message, context={'request': request}).data,
-                'bot_message': ChatMessageSerializer(bot_message, context={'request': request}).data,
+                'context_question': {
+                    'id': str(context_question.id),
+                    'question': question_text,
+                    'answer': response_text,
+                    'message_id': str(user_message.id),
+                    'created_at': context_question.created_at.isoformat()
+                },
                 'conversation_id': str(conversation.id)
             }, status=status.HTTP_201_CREATED)
 
@@ -837,6 +856,156 @@ class SendChatMessageModernView(APIView):
             logger.error(f"Error sending chat message: {str(e)}")
             return Response(
                 {'error': 'An error occurred while processing your message'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    def handle_context_question_upload(self, conversation, context_message_id, audio_file, attachment_file):
+        """
+        Handle file/audio upload from context sidebar
+        Does NOT create conversation messages, only creates ContextQuestion
+        """
+        logger.info(f"✅ CONTEXT HANDLER STARTED - NO conversation messages will be created")
+        try:
+            # Get the context message
+            context_message = ChatMessage.objects.get(id=context_message_id, conversation=conversation)
+            logger.info(f"📌 Context message found: type={context_message.message_type}, id={context_message_id}")
+
+            # Process audio file if provided
+            file_path = None
+            transcribed_text = ""
+            if audio_file:
+                file_path = self.save_audio_file(audio_file, conversation.id)
+
+                # Transcribe audio
+                speech_service = SpeechToTextService()
+                transcribed_text, error = speech_service.transcribe_audio(file_path)
+
+                if error:
+                    return Response(
+                        {'error': f'Transcription failed: {error}'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+
+            # Process attachment file if provided
+            attachment_path = None
+            attachment_type = None
+            attachment_name = None
+            if attachment_file:
+                attachment_path, attachment_type = self.save_attachment_file(attachment_file, conversation.id)
+                attachment_name = attachment_file.name
+
+            # Build context for AI response
+            # 1. Get full conversation history
+            previous_messages = ChatMessage.objects.filter(
+                conversation=conversation
+            ).order_by('created_at')
+            chat_service = ChatService()
+            conversation_history = chat_service.build_conversation_history(previous_messages)
+
+            # 2. Get the selected message context with entities
+            if context_message.message_type == 'user':
+                context_message_text = context_message.transcribed_text or "Previous user message"
+                # Include entity information
+                if context_message.intent:
+                    context_message_text += f"\nIntent: {context_message.intent}"
+                if context_message.keywords:
+                    context_message_text += f"\nKeywords: {', '.join(context_message.keywords)}"
+                if context_message.entities:
+                    context_message_text += f"\nEntities: {', '.join(context_message.entities)}"
+                if context_message.domain_terms:
+                    context_message_text += f"\nDomain Terms: {', '.join(context_message.domain_terms)}"
+                if context_message.action_items:
+                    context_message_text += f"\nAction Items: {', '.join(context_message.action_items)}"
+                if context_message.topics:
+                    context_message_text += f"\nTopics: {', '.join(context_message.topics)}"
+            else:
+                context_message_text = context_message.response_text or "Previous bot response"
+
+            # 3. Get all previous context questions for this message
+            previous_questions = ContextQuestion.objects.filter(
+                message=context_message
+            ).order_by('created_at')
+
+            previous_context_qa = ""
+            if previous_questions.exists():
+                previous_context_qa = "\n\nPrevious interactions about this message:\n"
+                for pq in previous_questions:
+                    previous_context_qa += f"Q: {pq.question}\nA: {pq.answer}\n"
+
+            # Build the user prompt
+            if not transcribed_text and attachment_file:
+                # File upload without audio
+                if attachment_type == 'pdf':
+                    user_input = f"Regarding the message: '{context_message_text}'{previous_context_qa}\n\nI've uploaded a PDF document: {attachment_name}. Please analyze this file in the context of our previous conversation, this specific message (including its intent, keywords, entities), and all previous interactions about it."
+                elif attachment_type == 'image':
+                    user_input = f"Regarding the message: '{context_message_text}'{previous_context_qa}\n\nI've uploaded an image: {attachment_name}. How does this relate to what we were discussing?"
+                elif attachment_type == 'document':
+                    user_input = f"Regarding the message: '{context_message_text}'{previous_context_qa}\n\nI've uploaded a document: {attachment_name}. Please review this in the context of our previous conversation."
+                else:
+                    user_input = f"Regarding the message: '{context_message_text}'{previous_context_qa}\n\nI've uploaded a file: {attachment_name}. Please help me understand how this relates to our discussion."
+            else:
+                # Audio/text provided
+                user_input = f"Regarding the message: '{context_message_text}'{previous_context_qa}\n\n{transcribed_text}"
+
+            # Generate AI response
+            response_text, error = chat_service.generate_response(
+                conversation_history,
+                user_input
+            )
+
+            if error:
+                logger.error(f"Context question response error: {error}")
+                response_text = "I'm sorry, I'm having trouble responding right now. Please try again."
+
+            # Create question text for display
+            if audio_file:
+                question_text = f"🎤 {transcribed_text or 'Audio recording'}"
+            elif attachment_file:
+                file_icon = '📎'
+                if attachment_type == 'pdf':
+                    file_icon = '📄'
+                elif attachment_type == 'image':
+                    file_icon = '🖼️'
+                elif attachment_type == 'document':
+                    file_icon = '📝'
+                question_text = f"{file_icon} {transcribed_text or f'Uploaded: {attachment_name}'}"
+            else:
+                question_text = transcribed_text
+
+            # Save as ContextQuestion ONLY (no conversation messages)
+            context_question = ContextQuestion.objects.create(
+                conversation=conversation,
+                message=context_message,
+                question=question_text,
+                answer=response_text,
+                context_summary=conversation.conversation_summary
+            )
+
+            logger.info(f"💾 ContextQuestion saved - NO ChatMessage created! Returning context_question response")
+
+            # Return the context question data (NOT conversation messages)
+            response_data = {
+                'context_question': {
+                    'id': str(context_question.id),
+                    'question': question_text,
+                    'answer': response_text,
+                    'message_id': str(context_message.id),
+                    'created_at': context_question.created_at.isoformat()
+                },
+                'conversation_id': str(conversation.id)
+            }
+            logger.info(f"📤 Returning response with context_question (NO user_message or bot_message)")
+            return Response(response_data, status=status.HTTP_201_CREATED)
+
+        except ChatMessage.DoesNotExist:
+            return Response(
+                {'error': 'Context message not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            logger.error(f"Error handling context question upload: {str(e)}")
+            return Response(
+                {'error': 'An error occurred while processing your upload'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
@@ -978,10 +1147,15 @@ class AskContextQuestionView(APIView):
             message = ChatMessage.objects.get(id=message_id, conversation=conversation)
             conversation_history = conversation.messages.all().order_by('created_at')
 
+            # Get previous context questions for this specific message to include in context
+            previous_context_questions = ContextQuestion.objects.filter(
+                message=message
+            ).order_by('created_at')
+
             # Generate answer using context
             summary_service = SummaryService()
             answer, error = summary_service.answer_context_question(
-                question, message, conversation_history
+                question, message, conversation_history, previous_context_questions
             )
 
             if error:

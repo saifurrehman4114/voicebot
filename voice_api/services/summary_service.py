@@ -115,7 +115,7 @@ Summary:"""
             return None, error_msg
 
     @staticmethod
-    def answer_context_question(question, message_context, conversation_history):
+    def answer_context_question(question, message_context, conversation_history, previous_context_questions=None):
         """
         Answer a question about a specific message in context
 
@@ -123,6 +123,7 @@ Summary:"""
             question: The user's question
             message_context: The specific message being asked about
             conversation_history: List of messages for full context
+            previous_context_questions: Previous questions/answers about this message (optional)
 
         Returns:
             tuple: (answer_text: str, error_message: str or None)
@@ -143,8 +144,21 @@ Summary:"""
             # Identify the specific message
             if message_context.message_type == 'user':
                 specific_message = f"User: {message_context.transcribed_text}"
+                # Include entity information if available
+                if message_context.intent:
+                    specific_message += f"\nIntent: {message_context.intent}"
+                if message_context.keywords:
+                    specific_message += f"\nKeywords: {', '.join(message_context.keywords)}"
+                if message_context.entities:
+                    specific_message += f"\nEntities: {', '.join(message_context.entities)}"
             else:
                 specific_message = f"Bot: {message_context.response_text}"
+
+            # Build previous context questions text
+            previous_qa_text = ""
+            if previous_context_questions:
+                for cq in previous_context_questions:
+                    previous_qa_text += f"\nQ: {cq.question}\nA: {cq.answer}\n"
 
             # Prepare the question-answering request
             prompt = f"""Given the following conversation context, answer the user's question about a specific message.
@@ -153,11 +167,19 @@ Full Conversation:
 {context_text}
 
 Specific Message Being Asked About:
-{specific_message}
+{specific_message}"""
 
-User's Question: {question}
+            if previous_qa_text:
+                prompt += f"""
 
-Please provide a clear, helpful answer based on the conversation context:"""
+Previous Questions/Responses About This Message:
+{previous_qa_text}"""
+
+            prompt += f"""
+
+User's New Question: {question}
+
+Please provide a clear, helpful answer based on all the above context (conversation history, the specific message details, and previous questions/responses):"""
 
             payload = {
                 "model": "llama-3.3-70b-versatile",  # Updated to current model
