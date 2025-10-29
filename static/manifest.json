@@ -1,11 +1,11 @@
 {
-  "name": "Voicebot AI - Your Voice Companion",
-  "short_name": "Voicebot AI",
+  "name": "CHABOT AI - Your Voice Companion",
+  "short_name": "CHABOT AI",
   "description": "AI-powered voice assistant with intelligent conversation management, appointment scheduling, and context-aware responses",
   "start_url": "/chat/",
   "display": "standalone",
-  "background_color": "#667eea",
-  "theme_color": "#667eea",
+  "background_color": "#8b9eff",
+  "theme_color": "#8b9eff",
   "orientation": "portrait-primary",
   "scope": "/",
   "icons": [

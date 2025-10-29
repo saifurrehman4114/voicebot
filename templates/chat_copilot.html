@@ -3,23 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
-    <title>Voicebot AI - Your AI Companion</title>
+    <title>CHABOT AI - Your AI Companion</title>
 
     <!-- PWA Meta Tags -->
     <meta name="description" content="AI-powered voice assistant with intelligent conversation management, appointment scheduling, and context-aware responses">
-    <meta name="theme-color" content="#667eea" media="(prefers-color-scheme: light)">
-    <meta name="theme-color" content="#667eea" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#8b9eff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#8b9eff" media="(prefers-color-scheme: dark)">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Voicebot AI">
-    <meta name="application-name" content="Voicebot AI">
+    <meta name="apple-mobile-web-app-title" content="CHABOT AI">
+    <meta name="application-name" content="CHABOT AI">
 
     <!-- Samsung/Android specific -->
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#667eea">
-    <meta name="msapplication-navbutton-color" content="#667eea">
-    <meta name="msapplication-TileColor" content="#667eea">
+    <meta name="theme-color" content="#8b9eff">
+    <meta name="msapplication-navbutton-color" content="#8b9eff">
+    <meta name="msapplication-TileColor" content="#8b9eff">
     <meta name="msapplication-starturl" content="/chat/">
 
     <!-- Prevent auto-zoom on input focus (iOS Safari) -->
@@ -42,15 +42,15 @@
         }
 
         :root {
-            /* Microsoft Copilot Color Palette */
-            --copilot-blue: #0078D4;
-            --copilot-purple: #8661C5;
-            --copilot-teal: #00BCF2;
-            --copilot-pink: #E3008C;
-            --gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --gradient-2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            --gradient-3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            --gradient-copilot: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            /* CHABOT AI Color Palette - Lighter & More Appealing */
+            --copilot-blue: #5a9cff;
+            --copilot-purple: #a78bfa;
+            --copilot-teal: #22d3ee;
+            --copilot-pink: #f472b6;
+            --gradient-1: linear-gradient(135deg, #8b9eff 0%, #a78bfa 100%);
+            --gradient-2: linear-gradient(135deg, #fbb6ff 0%, #fca5a5 100%);
+            --gradient-3: linear-gradient(135deg, #7dd3fc 0%, #22d3ee 100%);
+            --gradient-copilot: linear-gradient(135deg, #8b9eff 0%, #a78bfa 50%, #fbb6ff 100%);
 
             --bg-primary: #f5f5f5;
             --bg-secondary: #ffffff;
@@ -88,7 +88,7 @@
             width: 100%;
             height: 100%;
             z-index: -1;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%);
+            background: linear-gradient(135deg, #8b9eff 0%, #a78bfa 25%, #fbb6ff 50%, #7dd3fc 75%, #22d3ee 100%);
             background-size: 400% 400%;
             animation: gradientShift 15s ease infinite;
             opacity: 0.03;
@@ -834,10 +834,10 @@
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%) translateY(200px);
-            background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
-            border: 2px solid rgba(102, 126, 234, 0.2);
+            background: linear-gradient(135deg, #ffffff 0%, #f5f7ff 100%);
+            border: 2px solid rgba(139, 158, 255, 0.25);
             border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(102, 126, 234, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+            box-shadow: 0 20px 60px rgba(139, 158, 255, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.5) inset;
             z-index: 2000;
             max-width: 420px;
             width: calc(100% - 40px);
@@ -854,7 +854,7 @@
             left: 0;
             right: 0;
             height: 4px;
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background: linear-gradient(90deg, #8b9eff 0%, #a78bfa 50%, #fbb6ff 100%);
             animation: shimmer 2s infinite;
         }
 
@@ -886,7 +886,7 @@
         .pwa-install-icon {
             font-size: 48px;
             flex-shrink: 0;
-            filter: drop-shadow(0 4px 8px rgba(102, 126, 234, 0.3));
+            filter: drop-shadow(0 4px 8px rgba(139, 158, 255, 0.35));
             animation: float 3s ease-in-out infinite;
         }
 
@@ -902,7 +902,7 @@
         .pwa-install-title {
             font-size: 18px;
             font-weight: 700;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #8b9eff 0%, #a78bfa 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -924,7 +924,7 @@
 
         .pwa-install-btn {
             padding: 12px 24px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #8b9eff 0%, #a78bfa 100%);
             color: white;
             border: none;
             border-radius: 12px;
@@ -932,7 +932,7 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 6px 20px rgba(139, 158, 255, 0.4);
             position: relative;
             overflow: hidden;
         }
@@ -954,7 +954,7 @@
 
         .pwa-install-btn:hover {
             transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+            box-shadow: 0 8px 25px rgba(139, 158, 255, 0.5);
         }
 
         .pwa-install-btn:active {
@@ -964,11 +964,11 @@
         .pwa-dismiss-btn {
             width: 36px;
             height: 36px;
-            background: rgba(102, 126, 234, 0.1);
-            border: 1px solid rgba(102, 126, 234, 0.2);
+            background: rgba(139, 158, 255, 0.1);
+            border: 1px solid rgba(139, 158, 255, 0.25);
             border-radius: 10px;
             font-size: 16px;
-            color: #667eea;
+            color: #8b9eff;
             cursor: pointer;
             transition: all 0.3s ease;
             display: flex;
@@ -978,10 +978,10 @@
         }
 
         .pwa-dismiss-btn:hover {
-            background: rgba(102, 126, 234, 0.15);
-            border-color: rgba(102, 126, 234, 0.3);
+            background: rgba(139, 158, 255, 0.18);
+            border-color: rgba(139, 158, 255, 0.35);
             transform: rotate(90deg);
-            color: #764ba2;
+            color: #a78bfa;
         }
 
         /* Mobile responsive improvements */
@@ -2730,7 +2730,7 @@
                 </button>
                 <div class="logo">
                     <div class="logo-icon">🤖</div>
-                    <span class="logo-text">Voicebot AI</span>
+                    <span class="logo-text">CHABOT AI</span>
                 </div>
                 <button class="new-chat-btn" onclick="createNewChat()">
                     <span>✨</span>
@@ -5483,7 +5483,7 @@
                 <div class="pwa-install-content">
                     <div class="pwa-install-icon">📱</div>
                     <div class="pwa-install-text">
-                        <div class="pwa-install-title">Install Voicebot AI</div>
+                        <div class="pwa-install-title">Install CHABOT AI</div>
                         <div class="pwa-install-subtitle">Get quick access and work offline</div>
                     </div>
                     <div class="pwa-install-actions">
@@ -5536,7 +5536,7 @@
         // Detect when app is installed
         window.addEventListener('appinstalled', () => {
             console.log('✅ PWA installed successfully!');
-            showNotification('Voicebot AI installed! You can now use it offline.', 'success');
+            showNotification('CHABOT AI installed! You can now use it offline.', 'success');
             deferredPrompt = null;
         });
 
